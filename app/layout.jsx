@@ -1,5 +1,6 @@
 import "./globals.css";
 import "./practice.css";
+import "./animation.css";
 
 export const metadata = {
   title: "MethodLab — See how code works",

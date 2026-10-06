@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { lessons, defaultConfig } from "../lib/lessons.mjs";
 import { filterLessons } from "../lib/catalog.mjs";
 import { buildTrace, format } from "../lib/engine.mjs";
+import { buildAnimationTrace } from "../lib/animation.mjs";
+import TracePlayer from "./trace-player";
 import { startQuizAttempt, TOPIC_QUESTION_COUNT } from "../lib/quiz.mjs";
 import { LearnerBanner } from "./learner-dialog";
 import { personalizeCelebration, correctFeedback, retryFeedback, learnerGoalMessage } from "../lib/learner.mjs";
@@ -36,29 +38,6 @@ function InputEditor({ lesson, config, setConfig, error }) {
   </section>;
 }
 
-function Visualizer({ lesson, trace, step, playing, setPlaying, setStep, speed, setSpeed, error }) {
-  const frame=trace.frames[Math.min(step,trace.frames.length-1)], total=trace.frames.length-1, done=step === total;
-  const isSorting=["sort","sorted"].includes(lesson.id);
-  const visibleInput=frame.working && (["sort","sorted","append","push","unshift"].includes(lesson.id) || lesson.language === "python" && lesson.mutates) ? frame.working : trace.items;
-  const objectInput = lesson.inputType === "object" || lesson.id === "get";
-  const textInput = typeof trace.input === "string";
-  const stringify=v=>format(v,lesson.language);
-  return <section className="visual-card" id="playground" aria-label="Step-by-step visualization"><div className="visual-heading"><span className="eyebrow"><Icon name="play" size={14}/> SEE IT HAPPEN</span><span className={`step-count ${done ? "complete" : ""}`}>{done ? "Complete" : `Step ${step} of ${total}`}</span></div>
-    <div className="visual-stage">
-      <div className="row-label"><span>{trace.inputLabel || (lesson.id === "split" ? "Pieces from the original text" : lesson.id === "range" ? "Sequence (stop excluded)" : objectInput ? "Object entries" : frame.working && visibleInput === frame.working ? lesson.language === "python" ? "Current list" : "Current array" : textInput ? "Original text" : "Original input")}</span><span className="meta-text">{visibleInput.length} {textInput && lesson.id !== "split" ? "characters" : objectInput ? "entries" : "items"}</span></div>
-      <div className="value-row input-row">{visibleInput.length ? visibleInput.map((value,i)=><div key={i} className={`value-item ${frame.active.includes(i) ? "active" : ""} ${step && i < (frame.active[0] ?? -1) && !isSorting ? "visited" : ""}`}><span className="value-box">{objectInput ? String(value) : stringify(value)}</span><span className="value-index">{objectInput ? "entry" : i}</span></div>) : <span className="empty-label">Empty input</span>}</div>
-      <div className="process-connector"><div className="connector-line"/><div className={`process-node ${playing ? "processing" : ""}`}><Icon name="code"/><code>{step ? frame.expression : trace.operationLabel}</code></div><div className="connector-line"/><span className="connector-point"/></div>
-      <div className="row-label"><span>{lesson.mutates || lesson.id === "forEach" ? "Return value" : "Result"}</span><span className="output-tag">{trace.mutated !== null ? "changes original" : "original unchanged"}</span></div>
-      <div className="value-row output-row" aria-live="polite" aria-atomic="true">{Array.isArray(frame.output) ? frame.output.length ? frame.output.map((v,i)=><div className="value-item output-item" key={`${i}-${stringify(v)}`}><span className="value-box">{stringify(v)}</span></div>) : <span className="empty-label">{done ? "[ ] — empty result" : step ? "[ ] — no items yet" : "The result will appear here"}</span> : <div className={`scalar-result ${typeof frame.output === "boolean" ? frame.output ? "true-value" : "false-value" : ""}`} key={stringify(frame.output)}>{step || ["reduce","sum","len","every","some","includes"].includes(lesson.id) ? stringify(frame.output) : "Waiting…"}</div>}</div>
-      {trace.mutated !== null && step > 0 && <div className="mutation-note">{lesson.language === "python" ? "List" : "Array"} after {lesson.id}: <code>{stringify(frame.working || trace.mutated)}</code></div>}
-      {lesson.id === "forEach" && <div className="side-effects"><span className="eyebrow">CALLBACK ACTIONS</span><pre>effects: {stringify(frame.sideEffects || [])}</pre><p>The callback records each value in effects. forEach() itself returns undefined.</p></div>}
-    </div>
-    <div className="step-explanation" aria-live="polite"><span className="explanation-icon"><Icon name={done ? "check" : "bulb"} size={17}/></span><p>{frame.note}</p></div>
-    {isSorting && <p className="algorithm-note">The moves illustrate ordering. {lesson.language === "python" ? "Python" : "JavaScript"} may use a different internal sorting sequence.</p>}
-    <div className="player"><button className="primary-button play-button" disabled={!!error} onClick={()=>{if(done)setStep(0);setPlaying(!playing);}}><Icon name={playing ? "pause" : "play"} size={16}/>{playing ? "Pause" : done ? "Replay" : "Play animation"}</button><button className="secondary-button step-button" disabled={!!error || done} onClick={()=>{setPlaying(false);setStep(s=>Math.min(s+1,total));}}><Icon name="step" size={15}/>Next step</button><button className="icon-button" title="Reset animation" aria-label="Reset animation" onClick={()=>{setPlaying(false);setStep(0);}}><Icon name="reset"/></button><label className="speed-control">Speed<select aria-label="Animation speed" value={speed} onChange={e=>setSpeed(Number(e.target.value))}><option value="0.5">0.5×</option><option value="1">1×</option><option value="2">2×</option></select></label></div>
-    <div className="animation-progress" role="progressbar" aria-label="Animation progress" aria-valuemin={0} aria-valuemax={total} aria-valuenow={step}><span style={{width:`${step/total*100}%`}}/></div>
-  </section>;
-}
 function LessonDetails({ topic }) {
   if (!topic.syntax) return null;
   const exampleTrace = topic.example ? null : buildTrace(topic, defaultConfig(topic));
@@ -126,14 +105,14 @@ export default function MethodsWorkspace({ initialLanguage, initialExperiment, i
   const mainRef=useRef(null);
   const [methodSearch,setMethodSearch]=useState(""),[methodGroup,setMethodGroup]=useState("all");
   const topic=lessons[language || "javascript"].find(l=>l.id === topicId) || lessons[language || "javascript"][0];
-  const computation=useMemo(()=>{try{return {trace:buildTrace(topic,config),error:null};}catch(e){return {trace:buildTrace(topic,defaultConfig(topic)),error:e.message};}},[topic,config]);
+  const computation=useMemo(()=>{try{return {trace:buildAnimationTrace(topic,config),error:null};}catch(e){return {trace:buildAnimationTrace(topic,defaultConfig(topic)),error:e.message};}},[topic,config]);
   const {trace,error}=computation;
   function selectTopic(id,lang=language || "javascript"){const l=lessons[lang].find(l=>l.id === id);if(!l)throw new Error("Unknown lesson.");setLanguage(lang);setTopicId(id);setConfigState(defaultConfig(l));setStep(0);setPlaying(false);}
   function chooseLanguage(lang){selectTopic(lessons[lang][0].id,lang);setMode("learn");setMethodSearch("");setMethodGroup("all");}
   function setConfig(data){setConfigState(data);setPlaying(false);setStep(0);}
   function changeMode(next){if(!language)chooseLanguage("javascript");setMode(next);setPlaying(false);}
   function goLearn(id){selectTopic(id);setMode("learn");}
-  useEffect(()=>{if(!playing || error || !language || mode !== "learn")return; if(step >= trace.frames.length-1){setPlaying(false);return;}const timer=setTimeout(()=>setStep(s=>s+1),1400/speed);return ()=>clearTimeout(timer);},[playing,step,speed,trace,error,language,mode]);
+  useEffect(()=>{if(!playing || error || !language || mode !== "learn")return; if(step >= trace.frames.length-1){setPlaying(false);return;}const timer=setTimeout(()=>setStep(s=>s+1),1000/speed);return ()=>clearTimeout(timer);},[playing,step,speed,trace,error,language,mode]);
   useEffect(()=>{if(language && !error && step === trace.frames.length-1){setExplored(prev=>prev[language].includes(topic.id) ? prev : {...prev,[language]:[...prev[language],topic.id]});onExplored?.(topic.id);}},[step,trace,error,language,topic.id]);
   const groups=language ? [...new Set(lessons[language].map(l=>l.group))] : [];
   const filteredMethods=language ? filterLessons(lessons[language],methodSearch,methodGroup) : [];
@@ -149,7 +128,7 @@ export default function MethodsWorkspace({ initialLanguage, initialExperiment, i
       <div className="sidebar-bottom"><div className="lesson-progress"><div><span>Keep exploring</span><strong>{explored[language].length}/{lessons[language].length}</strong></div><div className="progress-track"><span style={{width:`${explored[language].length/lessons[language].length*100}%`}}/></div><p>Play a lesson to the end to mark it explored.</p></div><button className="text-button" onClick={onExit}><Icon name="home" size={16}/>Practice paths</button></div></aside>
     <main className="lesson-main" id="main-content" ref={mainRef}><LearnerBanner profile={profile} edit={editProfile}/>{mode === "test" ? <Quiz key={`${language}-${topic.id}`} language={language} topic={topic} goLearn={goLearn} profile={profile}/> : <><div className="breadcrumb"><span>{language === "javascript" ? "JavaScript" : "Python"}</span><span>/</span><span>{topic.group}</span><span>/</span><span>{topic.name}</span></div><div className="lesson-heading"><div><div className="lesson-title-line"><h1>{topic.name}</h1><span className="method-kind">{topic.kind}</span></div><p>{topic.verb}<span className="description-period">.</span></p></div><button className="secondary-button test-topic" onClick={()=>changeMode("test")}><Icon name="bulb" size={17}/>Test this method</button></div><div className="lesson-flow"><a href="#concept"><span>01</span>Understand</a><a href="#playground"><span>02</span>Experiment</a><button onClick={()=>changeMode("test")}><span>03</span>Test yourself</button></div>
     <section className="concept" id="concept"><div className="concept-icon"><Icon name="bulb" size={20}/></div><p>{topic.description}</p><span className={`behavior-pill ${topic.mutates ? "mutates" : ""}`}>{topic.mutates ? "Changes original" : "Returns a new value"}</span></section>
-    <div className="playground-grid"><div className="visual-column"><Visualizer lesson={topic} trace={trace} step={step} setStep={setStep} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} error={error}/><div className="remember-card"><span className="remember-icon"><Icon name="bulb" size={18}/></span><div><h3>A small detail that matters</h3><p>{topic.tip}</p></div></div></div><div className="editor-column"><InputEditor lesson={topic} config={config} setConfig={setConfig} error={error}/><CodeBlock code={error ? "// Fix the input above to update the code." : trace.code} language={language}/><div className="code-footnote">{language === "python" ? "A browser simulation of the shown Python operation." : "The shown operation runs on your example values."}</div></div></div>
+    <div className="playground-grid"><div className="visual-column"><TracePlayer lesson={topic} trace={trace} step={step} setStep={setStep} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} error={error}/><div className="remember-card"><span className="remember-icon"><Icon name="bulb" size={18}/></span><div><h3>A small detail that matters</h3><p>{topic.tip}</p></div></div></div><div className="editor-column"><InputEditor lesson={topic} config={config} setConfig={setConfig} error={error}/><CodeBlock code={error ? "// Fix the input above to update the code." : trace.code} language={language}/><div className="code-footnote">{language === "python" ? "A browser simulation of the shown Python operation." : "The shown operation runs on your example values."}</div></div></div>
     <LessonDetails key={topic.id} topic={topic}/><div className="lesson-bottom"><div><span className="eyebrow">WHEN YOU’LL USE IT</span><p>{topic.use}</p></div><a href={topic.source} target="_blank" rel="noopener noreferrer">Read the official docs <Icon name="book" size={14}/></a></div></>}</main></div>
     </>;
 }

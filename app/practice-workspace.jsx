@@ -3,14 +3,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, CodeBlock } from "./method-workspace";
 import { LearnerBanner } from "./learner-dialog";
+import NativePlayground from "./native-playground";
+import { nativeExperiments } from "../lib/native-animation.mjs";
 import { curricula, getPracticeEntries } from "../lib/curriculum.mjs";
 import { languages, practicePaths, filterPracticeEntries, checkGuidedExpression, normalizeOutput } from "../lib/practice.mjs";
 
 const flowSteps = ["Teach", "Learn", "Practice"];
 
-function ExampleWalkthrough({ entry, language }) {
+function StaticWalkthrough({ entry, language }) {
   const [step,setStep] = useState(0), steps = entry.steps || [];
   return <div className="worked-walkthrough"><CodeBlock code={entry.example} language={language}/><div className="walkthrough-notes"><span className="eyebrow">TRACE THE EXAMPLE</span><ol>{steps.map((note,index)=><li key={index} className={index<step?"traced":""}>{index<step?<Icon name="check" size={15}/>:<span className="walkthrough-number">{index+1}</span>}<span>{note}</span></li>)}</ol><div className="walkthrough-actions"><button className="primary-button" onClick={()=>setStep(current=>Math.min(current+1,steps.length))} disabled={step===steps.length}>{step===steps.length?"Walkthrough complete":"Next explanation"}</button><button className="text-button" onClick={()=>setStep(0)}>Start again</button></div>{step===steps.length && <div className="expected-output"><span className="eyebrow">PRINTED OUTPUT</span><pre>{entry.output}</pre></div>}</div></div>;
+}
+
+function ExampleWalkthrough({ entry, language }) {
+  return nativeExperiments[entry.id] ? <><NativePlayground key={entry.id} entry={entry} language={language}/><details className="reference-example"><summary>Read the original worked example</summary><StaticWalkthrough entry={entry} language={language}/></details></> : <StaticWalkthrough entry={entry} language={language}/>;
 }
 
 function OutputPractice({ entry, language, complete, profile }) {
