@@ -1,8 +1,9 @@
 import "./globals.css";
+import "./practice.css";
 
 export const metadata = {
   title: "MethodLab — See how code works",
-  description: "Learn JavaScript and Python with editable examples, step-by-step animations, and quizzes that explain every answer.",
+  description: "Practice JavaScript, Python, Java, and C with methods, programming basics, interview questions, and guided coding problems.",
   icons: { icon: "/icon.svg" },
 };
 

@@ -1,6 +1,6 @@
 # MethodLab
 
-A frontend-only Next.js App Router website for learning 25 JavaScript methods and 25 Python built-ins and methods through interactive examples, step-by-step visualizations, and quizzes.
+A frontend-only Next.js App Router practice website for JavaScript, Python, Java, and C. Each language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems.
 
 ## Run locally
 
@@ -15,13 +15,22 @@ Open http://localhost:3000. Build with `npm run build`, then preview the product
 
 On the first visit in a browser tab, an optional welcome form asks for a name, optional age, study or work background, domain, and learning goal. A saved profile personalizes the welcome, correct-answer feedback, retry encouragement, and quiz results. The profile uses `sessionStorage`: it survives reloads in that tab for the browser session and is not sent to a server. Skip for now keeps the welcome closed for that session. Use the profile icon or Edit details to update or clear the profile without resetting the active quiz. Age does not change the questions or difficulty.
 
-Choose JavaScript or Python, search by method name or purpose, and optionally filter by group. Python has eight built-ins, seven list methods, six string methods, and four dictionary methods. Group headings and result counts remain visible on mobile. Select a topic, read the concept, edit the input and operation, then Play or step through the visual explanation. Every lesson includes syntax, parameters, return values, mutation behavior, a worked example, common mistakes, and official documentation. Each method test asks five questions from different scenarios, with newly generated inputs and shuffled answer choices. Try again, switch methods, or reopen the test for a fresh set. Language quizzes generate 25 fresh questions for either language.
+Choose a language, then a practice path. Methods & functions has 25 entries per language: the existing interactive JavaScript and Python methods, plus grouped Java and C references with worked examples and output predictions. Programming basics contains eight topic lessons per language. Interview preparation contains 16 questions per language, model answers, a self-review checklist, follow-up questions, and links back to the related lesson. Coding problems contains six exercises each for JavaScript/Python and eight each for Java/C, totaling 28 guided problems.
+
+Each new topic uses Teach, Learn, and Practice steps. Read the concept, trace a worked example, then predict output, explain an interview answer, or complete a missing code expression. Search and topic filters work within every path. Completed practice stays in memory during the current visit, including when changing paths or languages; it resets on reload. Revealing a solution does not mark a problem solved. Guided expression checks preserve spaces within string literals and accept documented equivalent expressions. They do not compile or execute arbitrary programs; Java and C examples are curated references rather than installed compilers. Interview answers are self-reviewed, not automatically graded.
+
+The JavaScript/Python method path preserves editable inputs, visual animations, and five-question tests from different scenarios with shuffled choices. Python has eight built-ins, seven list methods, six string methods, and four dictionary methods. Each language's mixed method quiz generates 25 fresh questions. Java/C references include their language-specific syntax, return values, input behavior, official documentation, and printed output.
 
 After a wrong answer, try once more or reveal the explanation. A second wrong attempt reveals the solution. Correct answers trigger a dismissible code-themed popup, with different feedback for a first try, a second try, a streak, or a perfect first-try quiz. Explanations remain on the page after the popup closes. Revealed answers do not earn a point or trigger a celebration. Motion effects respect reduced-motion preferences.
 
 ## Content and implementation
 
-- `app/page.jsx`: React interface, animation controls, editable examples, quizzes.
+- `app/page.jsx` and `app/practice-app.jsx`: shared profile, four-language selection, four-path hub, and visit progress.
+- `app/method-workspace.jsx`: preserved JavaScript/Python animations, editable examples, and quizzes.
+- `app/practice-workspace.jsx`: grouped topic navigation, Teach/Learn/Practice tabs, example walkthroughs, interview self review, predictions, and guided coding exercises.
+- `app/practice.css`: responsive practice hub and learning flow styling.
+- `lib/curriculum/`: 32 topic lessons, 64 interview cards, 28 guided problems, and 50 Java/C references sourced from official language documentation.
+- `lib/curriculum.mjs` and `lib/practice.mjs`: curriculum navigation, language/path metadata, search, and guided expression validation.
 - `app/learner-dialog.jsx`: accessible welcome form, editable learner profile, and personal welcome.
 - `app/globals.css`: responsive layout, animation, and reduced-motion support.
 - `lib/lessons.mjs` and `lib/python-lessons.mjs`: 50 lessons, detailed explanations, default inputs, and official documentation links.
@@ -41,6 +50,6 @@ Optional WebMCP support exposes the same validated example configuration when th
 
 ## Validation
 
-Run `npm test` for the catalog, method, quiz, and learner-profile checks. On Windows with Microsoft Edge installed, build first and run `node scripts/ui-smoke.mjs` for a local browser check of search, group filters, empty results, language switching, all 50 lessons and animation results, welcome validation, session persistence, personalized encouragement, profile editing during a quiz, edited inputs, quiz attempts and rewards, keyboard focus, Python mutation, mobile overflow, reduced motion, and runtime exceptions. This check starts a temporary local static server and a hidden headless browser, and saves screenshots in ignored `.sites-runtime/`.
+Run `npm test` for curriculum completeness, JavaScript example and exercise accuracy, guided expression handling, catalog, methods, quizzes, and learner profiles. On Windows with Microsoft Edge installed, build first and run `node scripts/ui-smoke.mjs` for the existing method/profile regression checks, then `node scripts/practice-smoke.mjs` for all four languages and paths, all 32 topic predictions, 64 interview cards, 28 guided exercises, 50 Java/C references, search, filters, keyboard tabs, progress, model answers, solutions, and all 16 language/path mobile layouts. Both use temporary local servers and hidden headless browsers and save screenshots in ignored `.sites-runtime/`.
 
 WebMCP registration could not be validated in a browser with native `document.modelContext` support in the current environment.
