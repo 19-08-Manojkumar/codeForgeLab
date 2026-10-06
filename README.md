@@ -27,12 +27,15 @@ After a wrong answer, try once more or reveal the explanation. A second wrong at
 
 ## Content and implementation
 
+Home, practice hubs, and learning pages share an animated coding background with language-specific snippets, floating symbols, soft color glows, and orbit accents. The header's Pause motion control freezes the background independently of lesson playback. Decorative elements ignore pointer input and assistive technology. Reduced-motion preferences keep a static background and disable entrance effects. Mobile screens use fewer moving elements.
+
 - `app/page.jsx` and `app/practice-app.jsx`: shared profile, four-language selection, four-path hub, and visit progress.
 - `app/method-workspace.jsx`: JavaScript/Python editable examples and quizzes.
 - `app/trace-player.jsx`, `app/native-playground.jsx`, and `app/animation.css`: shared responsive animation player and editable Java/C examples.
 - `lib/animation.mjs` and `lib/native-animation.mjs`: detailed read/evaluate/commit/return snapshots and 50 bounded Java/C models.
 - `app/practice-workspace.jsx`: grouped topic navigation, Teach/Learn/Practice tabs, example walkthroughs, interview self review, predictions, and guided coding exercises.
 - `app/practice.css`: responsive practice hub and learning flow styling.
+- `app/code-atmosphere.jsx` and `app/atmosphere.css`: shared decorative coding backgrounds, language colors, card entrances, and pause/reduced-motion support.
 - `lib/curriculum/`: 32 topic lessons, 64 interview cards, 28 guided problems, and 50 Java/C references sourced from official language documentation.
 - `lib/curriculum.mjs` and `lib/practice.mjs`: curriculum navigation, language/path metadata, search, and guided expression validation.
 - `app/learner-dialog.jsx`: accessible welcome form, editable learner profile, and personal welcome.
@@ -59,3 +62,5 @@ Run `npm test` for curriculum completeness, JavaScript example and exercise accu
 Run `node scripts/animation-smoke.mjs` after building to check all 100 animations, every Java/C method with edited values, filter phases, return/changed-state separation, playback controls, invalid input, mobile layouts, keyboard scrubbing, and reduced motion. `tests/animation.test.mjs` independently checks changed-value results, overlapping memory, truncation, early search stops, parsing, return types, and snapshots. Local Java/C compilers are not installed; their generated examples are reviewed and their teaching models tested, without claiming compiler execution.
 
 WebMCP registration could not be validated in a browser with native `document.modelContext` support in the current environment.
+
+Run `node scripts/atmosphere-smoke.mjs` after building to check background movement, pause/resume, language-specific snippets, reduced motion, lesson interaction, and all 16 language/path layouts at 390px and 360px widths.

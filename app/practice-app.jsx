@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import MethodsWorkspace, { Icon } from "./method-workspace";
 import PracticeWorkspace from "./practice-workspace";
 import LearnerDialog, { LearnerBanner } from "./learner-dialog";
+import CodeAtmosphere from "./code-atmosphere";
 import { readLearnerSession, saveLearnerSession } from "../lib/learner.mjs";
 import { languages, practicePaths } from "../lib/practice.mjs";
 import { curricula } from "../lib/curriculum.mjs";
@@ -18,6 +19,7 @@ export default function PracticeApp() {
   const [language, setLanguage] = useState(null), [path, setPath] = useState(null), [initialEntry, setInitialEntry] = useState(null);
   const [profile, setProfile] = useState(null), [profileOpen, setProfileOpen] = useState(false), [completed, setCompleted] = useState({});
   const [experiment, setExperiment] = useState(null), [workspaceRevision, setWorkspaceRevision] = useState(0);
+  const [backgroundPaused, setBackgroundPaused] = useState(false);
   const headingRef = useRef(null), initializedRef = useRef(false);
   useEffect(() => { let storage; try { storage = window.sessionStorage; } catch {} const saved = readLearnerSession(storage); setProfile(saved.profile); setProfileOpen(!saved.handled); }, []);
   useEffect(() => { if (initializedRef.current) headingRef.current?.focus(); else initializedRef.current = true; }, [language, path]);
@@ -40,12 +42,13 @@ export default function PracticeApp() {
     try { Promise.resolve(registry.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{}); } catch {} return ()=>lifecycle.abort();
   }, []);
 
-  return <>
+  return <div className="app-scene" data-scene={!language ? "home" : !path ? "paths" : "workspace"} data-language={language || "all"} data-background-paused={backgroundPaused}>
+    <CodeAtmosphere language={language}/>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header practice-header">
       <button className="brand" aria-label="MethodLab home" onClick={goHome}><span className="brand-mark"><Icon name="code" size={20}/></span><span>method<span className="brand-bold">lab</span><span className="brand-period">.</span></span></button>
       <nav className="language-switch" aria-label="Choose language">{Object.keys(languages).map(id=><button key={id} aria-pressed={language===id} className={language===id?"selected":""} onClick={()=>chooseLanguage(id)}><LanguageMark language={id} small/>{languages[id].name}</button>)}</nav>
-      <div className="header-actions">{language && <button className="text-button paths-trigger" onClick={()=>choosePath(null)}>Practice paths</button>}<button className="profile-trigger" onClick={()=>setProfileOpen(true)} aria-label="Your profile" title="Your profile"><Icon name="user" size={18}/></button></div>
+      <div className="header-actions">{language && <button className="text-button paths-trigger" onClick={()=>choosePath(null)}>Practice paths</button>}<button className="ambient-toggle" aria-pressed={backgroundPaused} aria-label={backgroundPaused ? "Resume background animations" : "Pause background animations"} title={backgroundPaused ? "Resume background animations" : "Pause background animations"} onClick={()=>setBackgroundPaused(current=>!current)}><Icon name={backgroundPaused ? "play" : "pause"} size={15}/><span>{backgroundPaused ? "Resume motion" : "Pause motion"}</span></button><button className="profile-trigger" onClick={()=>setProfileOpen(true)} aria-label="Your profile" title="Your profile"><Icon name="user" size={18}/></button></div>
     </header>
     <LearnerDialog open={profileOpen} profile={profile} save={saveProfile} cancel={closeProfile} clear={()=>saveProfile(null)}/>
     {!language ? <main className="practice-home" id="main-content">
@@ -59,5 +62,5 @@ export default function PracticeApp() {
       <div className="practice-path-grid">{practicePaths.map(item=><button key={item.id} className={`practice-path-card ${item.id}`} data-path={item.id} onClick={()=>choosePath(item.id)}><div className="path-card-top"><span className="path-number">{item.number}</span><span className="path-icon"><Icon name={item.icon} size={24}/></span></div><h2>{item.title}</h2><p>{item.description}</p><div className="path-card-bottom"><span>{pathCount(language,item.id)} {item.id==="methods"?"methods & functions":item.id==="basics"?"topics":item.id==="interviews"?"questions":"problems"}</span><span>{completed[`${language}:${item.id}`]?.length ? `${completed[`${language}:${item.id}`].length} ${item.id === "methods" && lessons[language] ? "explored" : "practiced"}` : item.action}</span></div></button>)}</div>
     </main> : path === "methods" && lessons[language] ? <MethodsWorkspace key={`${language}-${workspaceRevision}`} initialLanguage={language} initialExperiment={experiment} initialExplored={completed[`${language}:methods`]||[]} onExplored={markCompleted} profile={profile} editProfile={()=>setProfileOpen(true)} onExit={()=>choosePath(null)}/> : <PracticeWorkspace key={`${language}-${path}-${initialEntry || ""}`} language={language} path={path} initialEntry={initialEntry} profile={profile} editProfile={()=>setProfileOpen(true)} completed={completed[`${language}:${path}`]||[]} markCompleted={markCompleted} changePath={choosePath}/>} 
     <footer className="site-footer"><span>methodlab<span className="brand-period">.</span></span><span>Understand. Trace. Practice.</span><span>JavaScript · Python · Java · C</span></footer>
-  </>;
+  </div>;
 }
