@@ -4,26 +4,25 @@ const snippets = {
   java: ["class Hello { }", "return result;", "List.of(1, 2, 3)", "Arrays.sort(values);", "String idea = \"hello\";", "System.out.println(result);"],
   c: ["#include <stdio.h>", "int main(void)", "return 0;", "for (int i = 0; i < n; i++)", "printf(\"hello\");", "int values[] = {1, 2, 3};"],
 };
-const symbols = ["{ }", "</>", "[ ]", "=>", "( )", ";", "++", "01", "{ }", "[1, 2]", "&&", "*", "( )", "</>"];
-const placements = [
-  [3, 16, 24, 36, -4, 1], [88, 12, 34, 42, -11, -1], [7, 39, 27, 39, -21, -1], [94, 35, 25, 33, -7, 1],
-  [16, 72, 38, 47, -18, 1], [79, 77, 35, 40, -27, -1], [2, 86, 25, 38, -12, 1], [91, 62, 29, 46, -31, -1],
-  [43, 88, 42, 43, -5, -1], [28, 64, 23, 45, -26, 1], [69, 21, 24, 41, -19, -1], [58, 79, 35, 39, -9, 1],
-  [27, 14, 22, 37, -23, 1], [67, 48, 25, 44, -34, -1],
+const symbols = ["{ }", "</>", "[ ]", "=>", "( )", ";", "++", "01", "&&", "*", "return", "fn"];
+// Deterministic offsets keep the initial render stable and spread the passes out.
+const flights = [
+  [-8, 8, 13, -2.5], [21, -16, 17, -9], [-12, 46, 15, -5], [50, -12, 19, -14],
+  [-9, 69, 14, -1], [9, 21, 18, -7], [39, -21, 16, -11], [-18, 85, 20, -4],
+  [2, 37, 17, -13], [70, -19, 22, -6], [-22, 58, 19, -10], [18, 5, 21, -17],
 ];
+const pathSymbols = { methods: ["f(x)", "return", "[ ]", "=>"], basics: ["if", "for", "=", "{ }"], interviews: ["O(n)", "?", "stack", "{ }"], problems: ["solve()", "++", "[ ]", "✓"] };
 
-export default function CodeAtmosphere({ language }) {
-  const lines = language ? snippets[language] : [snippets.javascript[1], snippets.python[0], snippets.java[2], snippets.c[0], snippets.python[5], snippets.java[3]];
+export default function CodeAtmosphere({ language, session, path }) {
+  const lines = snippets[language] || [snippets.javascript[1], snippets.python[0], snippets.java[2], snippets.c[0], snippets.python[5], snippets.java[3]];
+  const glyphs = pathSymbols[path] || symbols;
   return <div className="code-atmosphere" aria-hidden="true" inert>
-    <div className="code-glow glow-blue"/><div className="code-glow glow-teal"/><div className="code-glow glow-violet"/>
-    <div className="code-grid"/>
-    <div className="code-orbit orbit-one"/><div className="code-orbit orbit-two"/>
-    <div className="code-scan"/>
-    <div className="code-symbol-field">{symbols.map((symbol, index) => {
-      const [left, top, size, duration, delay, direction] = placements[index];
-      return <span className={`ambient-symbol syntax-${index % 4}`} key={index} style={{ left: `${left}%`, top: `${top}%`, "--symbol-size": `${size}px`, "--drift-time": `${duration}s`, "--drift-delay": `${delay}s`, "--drift-x": `${direction * 32}px`, "--drift-y": `${direction * -42}px`, "--drift-turn": `${direction * 8}deg` }}>{symbol}</span>;
+    <div className="sky-haze haze-one"/><div className="sky-haze haze-two"/>
+    <div className="sky-star-field">{Array.from({ length: 24 }, (_, index) => <i key={index} className={`sky-star syntax-${index % 4}`} style={{ left: `${index * 37 % 100}%`, top: `${index * 29 % 100}%`, "--flight-time": `${38 + index % 7 * 5}s`, "--flight-delay": `${-index * 3.7}s`, "--star-size": `${index % 3 === 0 ? 3 : 2}px` }}/>)}</div>
+    <div className="meteor-field" key={`${language || "all"}-${session}-${path || "hub"}`}>{flights.map(([left, top, duration, delay], index) => {
+      return <span className={`shooting-star syntax-${index % 4}`} key={index} style={{ left: `${left}%`, top: `${top}%`, "--flight-time": `${duration}s`, "--flight-delay": `${delay}s`, "--tail-length": `${90 + index % 4 * 35}px` }}><span className="star-tail"/><span className="star-head"/><code className="ambient-symbol">{glyphs[index % glyphs.length]}</code></span>;
     })}</div>
-    <div className="code-snippet-field">{lines.map((line, index) => <code className={`ambient-snippet snippet-${index + 1} syntax-${index % 4}`} key={index} style={{ "--drift-time": `${44 + index * 3}s`, "--drift-delay": `${-index * 7}s`, "--drift-x": `${index % 2 ? -28 : 24}px`, "--drift-y": `${index % 2 ? 32 : -30}px`, "--drift-turn": `${index % 2 ? -3 : 3}deg` }}>{line}</code>)}</div>
+    <div className="code-snippet-field" key={`code-${session}`}>{lines.map((line, index) => <code className={`ambient-snippet syntax-${index % 4}`} key={index} style={{ top: `${12 + index * 15}%`, "--flight-time": `${32 + index * 4}s`, "--flight-delay": `${-6 - index * 7}s` }}>{line}</code>)}</div>
     <div className="code-reading-wash"/>
   </div>;
 }

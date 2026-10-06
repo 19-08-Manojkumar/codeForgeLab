@@ -27,7 +27,7 @@ After a wrong answer, try once more or reveal the explanation. A second wrong at
 
 ## Content and implementation
 
-Home, practice hubs, and learning pages share an animated coding background with language-specific snippets, floating symbols, soft color glows, and orbit accents. The header's Pause motion control freezes the background independently of lesson playback. Decorative elements ignore pointer input and assistive technology. Reduced-motion preferences keep a static background and disable entrance effects. Mobile screens use fewer moving elements.
+Home, practice hubs, and learning pages use colorful shooting stars and code that travels across the viewport. Every language has its own palette. Home has diagonal meteor passes, hubs have wider fans, Teach has rising code, Learn has horizontal streams, Test reverses the direction, and Practice uses rising emerald accents. Switching topics resets the scene to Teach; background pause persists across navigation. The footer credits Manoj Kumar and links to his portfolio. The header's Pause motion control freezes the background independently of lesson playback. Decorative elements ignore pointer input and assistive technology. Reduced-motion preferences keep a static background and disable entrance effects. Mobile screens use fewer moving elements.
 
 - `app/page.jsx` and `app/practice-app.jsx`: shared profile, four-language selection, four-path hub, and visit progress.
 - `app/method-workspace.jsx`: JavaScript/Python editable examples and quizzes.
@@ -63,4 +63,4 @@ Run `node scripts/animation-smoke.mjs` after building to check all 100 animation
 
 WebMCP registration could not be validated in a browser with native `document.modelContext` support in the current environment.
 
-Run `node scripts/atmosphere-smoke.mjs` after building to check background movement, pause/resume, language-specific snippets, reduced motion, lesson interaction, and all 16 language/path layouts at 390px and 360px widths.
+Run `node scripts/atmosphere-smoke.mjs` after building to check viewport-scale meteor movement, six session themes, language palettes, theme resets, the creator link, pause/resume across navigation, reduced motion, lesson interaction, and all 16 language/path layouts at 390px and 360px widths.

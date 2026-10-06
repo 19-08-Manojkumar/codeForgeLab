@@ -100,9 +100,10 @@ function Quiz({ language, topic, goLearn, profile }) {
   </div>;
 }
 
-export default function MethodsWorkspace({ initialLanguage, initialExperiment, initialExplored = [], onExplored, profile, editProfile, onExit }){
+export default function MethodsWorkspace({ initialLanguage, initialExperiment, initialExplored = [], onExplored, profile, editProfile, onExit, onSessionChange }){
   const [language,setLanguage]=useState(initialLanguage),[topicId,setTopicId]=useState(initialExperiment?.method || lessons[initialLanguage][0].id),[mode,setMode]=useState("learn"),[config,setConfigState]=useState(initialExperiment?.config || defaultConfig(lessons[initialLanguage][0])),[step,setStep]=useState(0),[playing,setPlaying]=useState(false),[speed,setSpeed]=useState(1),[explored,setExplored]=useState({javascript:initialLanguage==="javascript"?initialExplored:[],python:initialLanguage==="python"?initialExplored:[]});
   const mainRef=useRef(null);
+  useEffect(()=>{onSessionChange?.(mode);},[mode,onSessionChange]);
   const [methodSearch,setMethodSearch]=useState(""),[methodGroup,setMethodGroup]=useState("all");
   const topic=lessons[language || "javascript"].find(l=>l.id === topicId) || lessons[language || "javascript"][0];
   const computation=useMemo(()=>{try{return {trace:buildAnimationTrace(topic,config),error:null};}catch(e){return {trace:buildAnimationTrace(topic,defaultConfig(topic)),error:e.message};}},[topic,config]);
