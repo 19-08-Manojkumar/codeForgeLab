@@ -6,6 +6,15 @@ import { format } from "../lib/engine.mjs";
 import { createQuizAttempt, createQuizContext, startQuizAttempt, QUIZ_HISTORY_KEY } from "../lib/quiz.mjs";
 import { javascriptTemplates } from "../lib/quiz-javascript.mjs";
 import { pythonTemplates } from "../lib/quiz-python.mjs";
+import { expandedPythonTemplates } from "../lib/quiz-python-expanded.mjs";
+
+test("expanded Python quizzes omit worked-example answer comments",()=>{
+  for(const templates of Object.values(expandedPythonTemplates)) for(const template of templates){
+    const question=template(createQuizContext(779));
+    assert.ok(question.code.split("\n").every(line=>!line.trimStart().startsWith("#")));
+    assert.ok(["result","items","[result, items]"].includes(question.code.split("\n").at(-1)));
+  }
+});
 
 test("every method has at least eight generated scenarios with four distinct answers", () => {
   for (const language of Object.keys(lessons)) {

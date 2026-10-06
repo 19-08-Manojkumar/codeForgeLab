@@ -2,18 +2,20 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { lessons, defaultConfig } from "../lib/lessons.mjs";
 import { buildTrace, format } from "../lib/engine.mjs";
+import { createQuizAttempt } from "../lib/quiz.mjs";
 const trace = (language,id,config={}) => {const lesson=lessons[language].find(l=>l.id===id);return buildTrace(lesson,{...defaultConfig(lesson),...config});};
 
-test("all 25 JavaScript and 8 Python lessons produce complete traces and usable quizzes",()=>{
+test("all 25 JavaScript and 25 Python lessons produce complete traces and usable quizzes",()=>{
   assert.equal(lessons.javascript.length,25);
-  assert.equal(lessons.python.length,8);
+  assert.equal(lessons.python.length,25);
   assert.equal(new Set(lessons.javascript.map(l=>l.id)).size,25);
-  assert.equal(Object.values(lessons).flat().length,33);
+  assert.equal(new Set(lessons.python.map(l=>l.id)).size,25);
+  assert.equal(Object.values(lessons).flat().length,50);
   for(const lesson of Object.values(lessons).flat()){
     const t=buildTrace(lesson,defaultConfig(lesson));
     assert.deepEqual(t.frames.at(-1).output,t.result);
     assert.ok(t.frames.length>=2);
-    for(const q of lesson.quiz){assert.equal(q.choices.length,4);assert.ok(q.answer>=0&&q.answer<4);assert.ok(q.explanation.length>20);}
+    for(const q of createQuizAttempt({language:lesson.language,topicId:lesson.id,seed:51}).questions){assert.equal(q.choices.length,4);assert.ok(q.answer>=0&&q.answer<4);assert.ok(q.explanation.length>20);}
   }
 });
 test("forEach visits every item, records effects, and returns undefined",()=>{
@@ -203,4 +205,40 @@ test("invalid examples fail intentionally rather than executing arbitrary code",
   assert.throws(()=>trace("python","range",{input:"100"}),/at most 12/);
   assert.throws(()=>trace("python","split",{operation:"separator",parameter:""}),/cannot be empty/);
   assert.throws(()=>trace("python","get",{input:"[]"}),/curly braces/);
+});
+
+test("Python extremes and truthiness preserve empty-input and short-circuit semantics",()=>{
+  assert.equal(trace("python","min",{input:"[-4,0,8]"}).result,-4);
+  assert.equal(trace("python","max",{input:"[-4,0,8]"}).result,8);
+  assert.throws(()=>trace("python","min",{input:"[]"}),/ValueError/);
+  assert.equal(trace("python","any",{input:"[]"}).result,false);
+  assert.equal(trace("python","all",{input:"[]"}).result,true);
+  assert.equal(trace("python","any",{input:'[0,false,"",null,-2,9]'}).frames.length,6);
+  assert.equal(trace("python","all",{input:'[1,true,"yes",0,9]'}).frames.length,5);
+});
+test("Python list editing separates changed list and returned value",()=>{
+  const extended=trace("python","extend",{input:"[1,2]",additions:"[3,4]"});assert.deepEqual(extended.mutated,[1,2,3,4]);assert.equal(extended.result,null);
+  assert.deepEqual(trace("python","insert",{input:"[1,2]",parameter:"-99",extra:"0"}).mutated,[0,1,2]);
+  assert.deepEqual(trace("python","insert",{input:"[1,2]",parameter:"99",extra:"3"}).mutated,[1,2,3]);
+  const popped=trace("python","pop",{input:"[1,2,3]",parameter:"-2"});assert.equal(popped.result,2);assert.deepEqual(popped.mutated,[1,3]);
+  assert.throws(()=>trace("python","pop",{input:"[]"}),/IndexError/);assert.throws(()=>trace("python","pop",{parameter:"99"}),/IndexError/);
+  assert.deepEqual(trace("python","remove",{input:"[1,true,2]",parameter:"true"}).mutated,[true,2]);
+  assert.throws(()=>trace("python","remove",{input:"[1,2]",parameter:'"1"'}),/ValueError/);
+  const reversed=trace("python","reverse",{input:"[3,1,2]"});assert.equal(reversed.result,null);assert.deepEqual(reversed.mutated,[2,1,3]);
+  const sorted=trace("python","sort",{input:"[10,2,1]"});assert.equal(sorted.result,null);assert.deepEqual(sorted.mutated,[1,2,10]);assert.ok(sorted.frames.slice(1).every(f=>f.output===null));
+});
+test("Python strings use literal all-match replacement, codepoints, and character-set stripping",()=>{
+  assert.equal(trace("python","replace",{input:"a.a",parameter:"a",extra:"$&"}).result,"$&.$&");
+  assert.equal(trace("python","replace",{input:"😀",parameter:"",extra:"-"}).result,"-😀-");
+  assert.equal(trace("python","replace",{input:"",parameter:"",extra:"-"}).result,"-");
+  assert.equal(trace("python","strip",{input:"abhelloba",parameter:"ab"}).result,"hello");
+  assert.equal(trace("python","strip",{input:"\u001chello\u001f",parameter:""}).result,"hello");
+  assert.equal(trace("python","strip",{input:"\ufeffhello\ufeff",parameter:""}).result,"\ufeffhello\ufeff");
+  assert.equal(trace("python","upper",{input:"ß"}).result,"SS");
+  assert.equal(trace("python","lower",{input:"HELLO"}).result,"hello");
+});
+test("Python dictionary snapshots preserve insertion order and tuple formatting",()=>{
+  assert.deepEqual(trace("python","keys",{input:'{"10":"ten","2":"two","name":"Ada"}'}).result,["10","2","name"]);
+  assert.deepEqual(trace("python","values",{input:'{"a":1,"b":1}'}).result,[1,1]);
+  const t=trace("python","items",{input:'{"a":1,"b":true}'});assert.equal(format(t.result,"python"),'[("a", 1), ("b", True)]');assert.ok(t.code.includes("list(data.items())"));assert.equal(t.mutated,null);
 });
