@@ -1,0 +1,72 @@
+.learning-save-status { min-height:32px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px; padding:5px 20px; color:#758199; font-size:14px; background:#ffffffbd; border-bottom:1px solid #e8edf6; }
+.learning-save-status.unavailable { color:#8b602b; background:#fff8ed; }
+.learning-save-status .text-button { font-size:14px; color:#7b511e; text-decoration:underline; }
+.notebook-trigger { display:flex; align-items:center; gap:6px; font-size:14px; color:#68738a; padding:8px 0; }
+.notebook-trigger:hover { color:var(--blue); }
+.learning-dashboard { margin:0 0 30px; }
+.dashboard-stats { display:flex; flex-wrap:wrap; gap:14px 30px; font-size:14px; color:#737e94; margin:0 0 18px; }
+.dashboard-stats strong { color:#3b4e79; font:600 18px var(--mono); margin-right:5px; }
+.dashboard-cards { display:grid; grid-template-columns:1.1fr 1fr; gap:18px; }
+.dashboard-cards>article { border:1px solid #dce4f4; border-radius:14px; padding:24px; background:#fff; min-width:0; }
+.dashboard-cards .daily-card { background:linear-gradient(135deg,#eef3ff,#fff 78%); border-color:#cddafb; }
+.dashboard-card-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.daily-duration { font-size:14px; color:#617398; }
+.dashboard-cards h2 { font-size:23px; font-weight:600; letter-spacing:-.5px; line-height:1.4; margin:10px 0 8px; }
+.dashboard-cards p { font-size:16px; color:#73809a; line-height:1.65; }
+.daily-language-label { display:flex; align-items:center; gap:12px; font-size:14px; color:#65738c; margin-top:16px; }
+.daily-language-label select,.notebook-filters select { padding:8px 12px; border:1px solid #d8e1f1; border-radius:7px; background:white; color:#3d527d; font-size:14px; min-width:130px; }
+.daily-card-bottom { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:20px; font-size:14px; color:#6d7b95; }
+.continue-card>.secondary-button { margin-top:17px; }
+.review-preview { display:flex; gap:11px; border-top:1px solid #e7ebf3; padding-top:16px; margin-top:18px; }
+.review-preview>svg { color:#789241; flex-shrink:0; margin-top:3px; }
+.review-preview strong { font-size:15px; font-weight:550; }
+.review-preview p { font-size:14px; margin-top:3px; }
+.continue-card>.text-button { color:var(--blue); margin-top:10px; font-size:14px; }
+.saved-learning-row { display:flex; flex-wrap:wrap; gap:18px 30px; margin-top:20px; }
+.saved-learning-row h3 { font-size:14px; font-weight:600; color:#607191; margin-bottom:8px; }
+.bookmark-list { display:flex; flex-wrap:wrap; gap:7px; }
+.bookmark-chip { padding:7px 10px; background:#fff; border:1px solid #dce4f4; border-radius:7px; color:#4961a3; font-size:14px; }
+.bookmark-chip:hover { background:#edf2ff; }
+.recent-quiz p { font-size:14px; color:#687b98; }.recent-quiz strong { margin-left:8px; color:#355aab; }
+.topic-bookmark { display:inline-flex; align-items:center; gap:7px; margin:0 0 15px; color:#74809a; border:1px solid #dfe6f3; border-radius:7px; padding:7px 10px; background:white; font-size:14px; }
+.topic-bookmark[aria-pressed=true] { color:#355de4; background:#eef2ff; border-color:#cbd6ff; }
+.daily-workspace,.notebook-workspace { max-width:1040px; padding:35px 32px 55px; margin:auto; min-height:calc(100svh - 180px); }
+.daily-title { display:flex; align-items:flex-start; justify-content:space-between; gap:22px; margin-bottom:24px; }
+.daily-title h1 { font-size:clamp(27px,3vw,37px); font-weight:600; letter-spacing:-1px; line-height:1.3; margin:10px 0; }
+.daily-title p { font-size:16px; color:#73809a; line-height:1.7; max-width:700px; }
+.daily-title>.text-button { white-space:nowrap; margin-top:10px; }
+.daily-step-list { list-style:none; display:flex; gap:9px; padding:0; margin:0 0 22px; }
+.daily-step-list li { flex:1; min-width:0; }
+.daily-step-list button { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; padding:13px 8px; border:1px solid #dde5f3; border-radius:8px; background:#fff; color:#7d89a1; font-size:14px; }
+.daily-step-list button>span { font-family:var(--mono); }
+.daily-step-list .current button { background:var(--blue); border-color:var(--blue); color:white; }
+.daily-step-list .done button { background:#edf8f2; border-color:#c9e6d8; color:#2d8462; }
+.daily-step-list .done.current button { outline:2px solid #8bbcaa; outline-offset:2px; }
+.daily-concept,.daily-exercise,.daily-finish,.notebook-empty { background:white; border:1px solid #dde5f3; border-radius:14px; padding:30px; }
+.daily-concept h2 { font-size:25px; font-weight:600; margin:12px 0; }
+.daily-concept p,.daily-concept li { font-size:16px; color:#66748d; line-height:1.85; }
+.daily-concept ul { margin:15px 0; padding-left:21px; }
+.daily-concept details { padding:17px 0; margin:5px 0 18px; border-top:1px solid #e8edf6; border-bottom:1px solid #e8edf6; }
+.daily-concept summary { color:#4c679d; font-size:15px; cursor:pointer; }.daily-concept details .code-block { margin:16px 0; }
+.daily-exercise>.eyebrow { display:block; margin-bottom:13px; }
+.daily-next { display:flex; justify-content:space-between; align-items:center; gap:15px; padding-top:20px; margin-top:20px; border-top:1px solid #e3e9f4; font-size:14px; color:#73809a; }
+.daily-finish,.notebook-empty { text-align:center; padding:44px 30px; }
+.daily-finish h2,.notebook-empty h2 { font-size:26px; font-weight:600; margin:17px 0 10px; }
+.daily-finish p,.notebook-empty p { color:#73809a; font-size:16px; line-height:1.75; max-width:560px; margin:0 auto 24px; }
+.daily-finish-icon { display:inline-flex; align-items:center; justify-content:center; width:70px; height:70px; border-radius:50%; color:#288560; background:#e6f6ec; }
+.daily-finish .exercise-actions { justify-content:center; }
+.notebook-empty>svg { color:#6d89d0; }
+.notebook-filters { display:flex; align-items:flex-end; flex-wrap:wrap; gap:15px 25px; margin-bottom:23px; }
+.notebook-filters label { font-size:14px; color:#687992; display:flex; flex-direction:column; gap:7px; }
+.notebook-filters>span { font-size:14px; color:#7d89a1; padding-bottom:8px; }
+.mistake-list { display:grid; gap:20px; }
+.mistake-card { padding:26px; background:#fff; border:1px solid #dde5f3; border-radius:12px; }
+.mistake-meta { display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; color:#8190a9; font-size:14px; margin-bottom:14px; }
+.mistake-card h2 { font-size:21px; line-height:1.5; font-weight:550; margin-bottom:16px; }
+.mistake-card .code-block { margin-bottom:16px; }.previous-answer { font-size:14px; color:#7c8091; margin-bottom:16px; }.previous-answer summary { cursor:pointer; }
+.mistake-card label { display:block; font-size:15px; color:#657590; margin:0 0 8px; }
+.mistake-card textarea { width:100%; resize:vertical; border:1px solid #d9e2f1; border-radius:8px; padding:12px; background:#fbfcff; font:14px/1.7 var(--mono); color:#3e537d; }
+.mistake-card .exercise-actions { margin-top:14px; }.review-explanation { margin-top:18px; padding:18px; border-radius:8px; background:#f5f8ff; font-size:15px; line-height:1.8; color:#647797; }
+.review-explanation pre,.previous-answer pre { white-space:pre-wrap; overflow-wrap:anywhere; font:14px/1.8 var(--mono); margin:10px 0; }
+@media(max-width:1100px){.notebook-trigger span { display:none; }.header-actions { gap:12px; }}
+@media(max-width:760px){.dashboard-cards { grid-template-columns:1fr; }.dashboard-cards>article { padding:21px; }.daily-workspace,.notebook-workspace { padding:27px 18px 36px; }.daily-title { flex-direction:column; gap:7px; }.daily-title>.text-button { margin-top:0; }.daily-concept,.daily-exercise,.daily-finish,.mistake-card { padding:21px; }.daily-step-list { gap:5px; }.daily-step-list button { font-size:12px; flex-direction:column; gap:4px; padding:11px 5px; }.daily-next { flex-wrap:wrap; }.notebook-filters { gap:13px; }.notebook-filters label { flex:1; min-width:130px; }.daily-card-bottom .primary-button { width:100%; }.dashboard-stats { gap:9px 18px; font-size:13px; }.dashboard-stats strong { font-size:16px; }.learning-save-status { font-size:13px; }.saved-learning-row { display:block; }.recent-quiz { margin-top:16px; }}

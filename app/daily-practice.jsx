@@ -1,0 +1,21 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Icon, CodeBlock } from "./method-workspace";
+import { OutputPractice, ProblemPractice } from "./practice-workspace";
+import { dailyPlan } from "../lib/daily-plan.mjs";
+import { localDay } from "../lib/learning-state.mjs";
+import { languages } from "../lib/practice.mjs";
+
+export default function DailyPractice({language,state,dispatch,profile,onSessionChange,onDraft,exit}) {
+  const [date]=useState(localDay),plan=dailyPlan(language,date),completed=state.daily[plan.key]?.completed||[];
+  const names=["concept","prediction-0","prediction-1","prediction-2","problem"],first=names.findIndex(marker=>!completed.includes(marker));
+  const [step,setStep]=useState(first<0?5:first);
+  useEffect(()=>{onSessionChange(step===0?"teach":step<4?"test":"practice");},[step,onSessionChange]);
+  const finish=marker=>dispatch({type:"daily",date,language,marker});
+  const onAnswer=answer=>dispatch({type:"answer",answer});
+  const saveDraft=draft=>onDraft?.({...draft,entryId:`daily-${date}-${draft.entryId}`});
+  const completeStep=()=>{finish(names[step]);dispatch({type:"complete",language,path:step<4?"basics":"problems",entryId:step<4?plan.predictions[step-1].id:plan.problem.id});};
+  return <main className="daily-workspace" id="main-content"><div className="daily-title"><div><span className="eyebrow">{languages[language].name.toUpperCase()} · DAILY PRACTICE</span><h1>{step===5?"You finished today's practice!":plan.concept.title}</h1><p>{step===5?"You read a concept, checked three predictions, and completed a coding exercise.":"Take one step at a time. Your completed steps are saved."}</p></div><button className="text-button" onClick={exit}>Back to practice</button></div><ol className="daily-step-list" aria-label="Daily practice steps">{["Concept","Predict 1","Predict 2","Predict 3","Code"].map((label,index)=><li key={label} className={step===index?"current":completed.includes(names[index])?"done":""}><button aria-current={step===index?"step":undefined} disabled={index>first&&first>=0} onClick={()=>setStep(index)}>{completed.includes(names[index])?<Icon name="check" size={15}/>:<span>{index+1}</span>}{label}</button></li>)}</ol>
+    {step===5?<section className="daily-finish"><span className="daily-finish-icon"><Icon name="check" size={32}/></span><h2>{profile?`Well done, ${profile.name}!`:"Well done!"}</h2><p>All five steps complete. Come back tomorrow for another session.</p><div className="exercise-actions"><button className="primary-button" onClick={exit}>Keep exploring</button><button className="secondary-button" onClick={()=>setStep(0)}>Review this session</button></div></section>:step===0?<section className="daily-concept"><span className="eyebrow">01 · UNDERSTAND THE IDEA</span><h2>{plan.concept.title}</h2><p>{plan.concept.summary}</p><ul>{plan.concept.concepts.map(point=><li key={point}>{point}</li>)}</ul><details><summary>Read a worked example</summary><CodeBlock code={plan.concept.example} language={language}/><ol>{plan.concept.steps.map(note=><li key={note}>{note}</li>)}</ol></details><button className="primary-button" onClick={()=>{finish("concept");setStep(1);}}>Continue to predictions</button></section>:<section className="daily-exercise"><span className="eyebrow">{step<4?`PREDICTION ${step} OF 3`:"05 · PUT IT INTO PRACTICE"}</span>{step<4?<OutputPractice key={`${plan.key}-${step}`} entry={plan.predictions[step-1]} language={language} profile={profile} complete={completeStep} onAnswer={onAnswer} path="basics" onDraft={saveDraft} initialAnswer={state.drafts[`${language}:basics:daily-${date}-${plan.predictions[step-1].id}`]?.value||""}/>:<ProblemPractice key={plan.key+"-problem"} entry={plan.problem} language={language} profile={profile} complete={completeStep} onAnswer={onAnswer} onDraft={saveDraft} initialAnswer={state.drafts[`${language}:problems:daily-${date}-${plan.problem.id}`]?.value||""}/>}<div className="daily-next"><span>{completed.includes(names[step])?"Step complete":"Answer correctly to complete this step."}</span><button className="primary-button" disabled={!completed.includes(names[step])} onClick={()=>setStep(step+1)}>{step===4?"Finish today's practice":step===3?"Continue to coding":"Next prediction"}</button></div></section>}
+  </main>;
+}
