@@ -32,8 +32,8 @@
 
 .learner-dialog{width:min(540px,calc(100vw - 32px));max-height:calc(100dvh - 32px);margin:auto;padding:30px 34px 25px;border:1px solid var(--border);border-radius:20px;background:var(--paper);color:var(--ink);box-shadow:0 24px 90px #14265432;overflow-y:auto;overscroll-behavior:contain}
 .learner-dialog::backdrop{background:#17244570;backdrop-filter:blur(5px)}
-.profile-topline{display:flex;align-items:center;gap:12px;margin-bottom:19px;position:relative;padding-right:25px}
-.profile-code-mark{display:grid;place-items:center;flex-shrink:0;width:63px;height:43px;background:var(--blue-light);color:var(--blue);border-radius:10px;font-family:var(--mono);font-size:14px;letter-spacing:-.4px}
+.profile-topline{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:19px;position:relative;padding-right:25px}
+.profile-code-mark{display:block;flex:0 1 auto;width:fit-content;min-width:63px;max-width:100%;height:auto;min-height:43px;padding:11px 12px;line-height:1.5;text-align:center;overflow-wrap:anywhere;background:var(--blue-light);color:var(--blue);border-radius:10px;font-family:var(--mono);font-size:14px;letter-spacing:-.4px}
 .profile-topline .eyebrow{font-size:10px;letter-spacing:1.1px}
 .profile-close{position:absolute;top:0;right:-8px;width:32px;height:32px;display:grid;place-items:center;border-radius:8px;color:var(--muted)}
 .profile-close:hover{background:var(--blue-light);color:var(--blue)}
