@@ -45,7 +45,7 @@ function LessonDetails({ topic }) {
   return <section className="lesson-details" aria-label="Method explanation"><div className="method-contract"><div><span className="eyebrow">HOW TO WRITE IT</span><code>{topic.syntax}</code></div><div><span className="eyebrow">WHAT YOU GET BACK</span><p>{topic.returns}</p></div><div><span className="eyebrow">DOES IT CHANGE THE INPUT?</span><p>{topic.mutation}</p></div></div><details className="detail-panel" open><summary>Understand the arguments <Icon name="chevron" size={16}/></summary><dl>{topic.parameters?.map(p=><div key={p.name}><dt><code>{p.name}</code></dt><dd>{p.description}</dd></div>)}</dl></details>{workedExample && <details className="detail-panel"><summary>Walk through an example <Icon name="chevron" size={16}/></summary><CodeBlock code={workedExample.code} language={topic.language}/><p className="example-result">Result: <code>{workedExample.result}</code></p><ol>{workedExample.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></details>}{topic.pitfalls?.length > 0 && <details className="detail-panel"><summary>Common mistakes to avoid <Icon name="chevron" size={16}/></summary><ul>{topic.pitfalls.map((p,i)=><li key={i}>{p}</li>)}</ul></details>}</section>;
 }
 
-function SuccessPopup({ celebration, dismiss }) {
+export function SuccessPopup({ celebration, dismiss }) {
   useEffect(()=>{
     if(!celebration) return;
     const timer=setTimeout(dismiss,5000);

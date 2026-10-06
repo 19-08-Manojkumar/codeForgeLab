@@ -23,7 +23,7 @@ All 100 method animations separate reading the current value, evaluating an oper
 
 The JavaScript/Python method path preserves five-question tests from different scenarios with shuffled choices. Python has eight built-ins, seven list methods, six string methods, and four dictionary methods. Each language's mixed method quiz generates 25 fresh questions. Java/C references include their language-specific syntax, return values, input behavior, official documentation, and printed output.
 
-After a wrong answer, try once more or reveal the explanation. A second wrong attempt reveals the solution. Correct answers trigger a dismissible code-themed popup, with different feedback for a first try, a second try, a streak, or a perfect first-try quiz. Explanations remain on the page after the popup closes. Revealed answers do not earn a point or trigger a celebration. Motion effects respect reduced-motion preferences.
+After a wrong answer, try once more or reveal the explanation. A second wrong attempt reveals the solution. Correct method quiz answers, output predictions, and guided coding answers trigger a dismissible code-themed popup: “Well done, Manoj!” uses the saved learner name, and “Well done!” praises anonymous learners. Quiz messages explain first tries, second tries, streaks, and perfect results. Popups close after five seconds, with Escape, or with the dismiss button. Editing a practice answer or leaving the exercise clears its popup; revealing an explanation or solution does not trigger one. Explanations remain after the popup closes. Motion effects respect reduced-motion preferences.
 
 ## Content and implementation
 

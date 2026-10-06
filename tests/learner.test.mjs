@@ -111,14 +111,16 @@ test("personalized celebrations retain their lifecycle fields and describe the a
     assert.match(result.title, /Manoj/);
     assert.notEqual(result.message, celebration.message);
     assert.equal(celebration.title, "Original");
-    if (kind === "streak") assert.match(result.title, /3 in a row/);
+    assert.equal(result.title, "Well done, Manoj!");
+    if (kind === "streak") assert.match(result.message, /3 correct predictions in a row/);
     if (kind === "perfect") assert.match(result.message, /All 5 predictions.*first try/);
   }
 });
 
 test("anonymous learners retain the existing generic feedback", () => {
   const celebration = { kind: "first", title: "That clicked!", message: "Nice work." };
-  assert.equal(personalizeCelebration(celebration, null), celebration);
+  assert.equal(personalizeCelebration(celebration, null).title, "Well done!");
+  assert.equal(personalizeCelebration(celebration, null).message, celebration.message);
   assert.equal(personalizeCelebration(null, example), null);
   assert.equal(correctFeedback(null), "That’s right.");
   assert.equal(retryFeedback(null), "Almost. Take another look.");
