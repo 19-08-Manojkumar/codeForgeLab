@@ -5,8 +5,14 @@ import { OutputPractice, ProblemPractice } from "./practice-workspace";
 import { dailyPlan } from "../lib/daily-plan.mjs";
 import { localDay } from "../lib/learning-state.mjs";
 import { languages } from "../lib/practice.mjs";
+import WebDailyPractice from "./web-daily-practice";
 
 export default function DailyPractice({language,state,dispatch,profile,onSessionChange,onDraft,exit}) {
+  if (language === "html" || language === "css") return <WebDailyPractice {...{language,state,dispatch,profile,onSessionChange,onDraft,exit}}/>;
+  return <ProgrammingDailyPractice {...{language,state,dispatch,profile,onSessionChange,onDraft,exit}}/>;
+}
+
+function ProgrammingDailyPractice({language,state,dispatch,profile,onSessionChange,onDraft,exit}) {
   const [date]=useState(localDay),plan=dailyPlan(language,date),completed=state.daily[plan.key]?.completed||[];
   const names=["concept","prediction-0","prediction-1","prediction-2","problem"],first=names.findIndex(marker=>!completed.includes(marker));
   const [step,setStep]=useState(first<0?5:first);

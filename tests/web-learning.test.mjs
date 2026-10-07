@@ -4,6 +4,8 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync, readdirSync } from "node:fs";
 import { applyLearningEvent, emptyLearningState, learningKey, webEditorLimit } from "../lib/learning-state.mjs";
 import { webLessons } from "../lib/web-lessons.mjs";
+import { getWebPracticeEntries, getWebPracticeEntry, webPracticePaths } from "../lib/web-practice.mjs";
+import { dailyPlan } from "../lib/daily-plan.mjs";
 import { learningApi } from "../server/worker.mjs";
 
 let sequence = 0;
@@ -62,6 +64,25 @@ test("web drafts retain the full editor bounds and remain valid JSON when trimme
   assert.equal(restored.css.length, webEditorLimit);
 });
 
+test("explorer drafts keep their selected example without changing ordinary lesson drafts", () => {
+  let state=emptyLearningState();
+  for(const [language, entryId, explorerId] of [["html","tag-explorer","h6"],["css","style-explorer","padding"]]) {
+    const item={language,path:"render",entryId,title:"Explore"}, source={html:"<p>My draft</p>",css:"p { padding: 20px; }",explorerId};
+    state=update(state,{type:"draft",...item,value:JSON.stringify({...source,other:"discard"})});
+    assert.deepEqual(JSON.parse(state.drafts[learningKey(item)].value),source);
+    for(const invalid of [null, 1, "", "x".repeat(101), "<script>", "not/an/id"]){
+      const bounded=update(state,{type:"draft",...item,value:JSON.stringify({...source,explorerId:invalid})});
+      assert.deepEqual(JSON.parse(bounded.drafts[learningKey(item)].value),{html:source.html,css:source.css});
+    }
+    const ordinary={language,path:"render",entryId:language==="html"?"elements":"selectors"};
+    state=update(state,{type:"draft",...ordinary,value:JSON.stringify(source)});
+    assert.deepEqual(JSON.parse(state.drafts[learningKey(ordinary)].value),{html:source.html,css:source.css});
+  }
+  const restored=JSON.parse(JSON.stringify(state));
+  assert.equal(JSON.parse(restored.drafts["html:render:tag-explorer"].value).explorerId,"h6");
+  assert.equal(JSON.parse(restored.drafts["css:render:style-explorer"].value).explorerId,"padding");
+});
+
 test("malformed web drafts cannot replace saved editor content", () => {
   const item = topic("css"), state = update(emptyLearningState(), { type:"draft", ...item, value:JSON.stringify({ html:"<p>Hello</p>", css:"p { color: blue; }" }) });
   for (const value of [undefined, "<p>not serialized</p>", "null", "[]", JSON.stringify({ html:"hello" }), JSON.stringify({ html:1, css:"" })])
@@ -69,12 +90,43 @@ test("malformed web drafts cannot replace saved editor content", () => {
   assert.equal(JSON.parse(state.drafts[learningKey(item)].value).html, "<p>Hello</p>");
 });
 
-test("HTML and CSS do not enter programming predictions, quizzes, or daily markers", () => {
+test("HTML and CSS daily progress uses rendering exercises independently of programming quizzes", () => {
   for (const language of ["html", "css"]) {
     const item = topic(language);
     assert.throws(() => update(emptyLearningState(), { type:"answer", answer:{ ...item, kind:"prediction", correct:false, submittedAnswer:"blue" } }), /rendering HTML and CSS/);
     assert.throws(() => update(emptyLearningState(), { type:"quiz", ...item, score:1, total:1 }), /rendering HTML and CSS/);
-    assert.throws(() => update(emptyLearningState(), { type:"daily", language, date:"2026-10-07", marker:"concept" }), /Invalid daily practice step/);
+    const state = update(emptyLearningState(), { type:"daily", language, date:"2026-10-07", marker:"concept" });
+    assert.deepEqual(state.daily[`2026-10-07:${language}`].completed, ["concept"]);
+    assert.deepEqual(state.stats, { attempts: 0, correct: 0 });
+    assert.throws(() => update(state, { type:"daily", language, date:"2026-02-30", marker:"concept" }), /Invalid daily practice step/);
+    const plan = dailyPlan(language, "2026-10-07");
+    assert.equal(plan.web, true);
+    assert.equal(new Set([...plan.predictions.map(entry => entry.id), plan.problem.id]).size, 4);
+    assert.deepEqual(plan, dailyPlan(language, "2026-10-07"));
+  }
+});
+
+test("all four web paths validate real topics and preserve independent source and interview answers", () => {
+  let state = emptyLearningState();
+  for (const language of ["html", "css"]) for (const { id: path } of webPracticePaths(language)) {
+    const entries = getWebPracticeEntries(language, path);
+    assert.equal(entries.length, path === "render" ? 10 : 9);
+    const entry = entries[0], item = { language, path, entryId: entry.id, title: entry.title };
+    state = update(state, { type:"complete", ...item });
+    state = update(state, { type:"draft", ...item, value: JSON.stringify({ html: entry.html, css: entry.css, answer: "A reviewed answer" }) });
+    const source = JSON.parse(state.drafts[learningKey(item)].value);
+    assert.equal(source.html, entry.html);
+    assert.equal(source.answer, path === "interviews" ? "A reviewed answer" : undefined);
+    assert.deepEqual(state.completed[`${language}:${path}`], [entry.id]);
+    assert.throws(() => update(state, { type:"complete", ...item, entryId:"missing-topic" }), /available learning topic/);
+  }
+  for (const language of ["html", "css"]) {
+    const entry = getWebPracticeEntries(language, "basics")[0];
+    assert.equal(getWebPracticeEntry(language, "basics", `daily-2026-10-07-${entry.id}`).id, entry.id);
+    assert.equal(getWebPracticeEntry(language, "basics", `daily-2026-02-30-${entry.id}`), undefined);
+    const item = { language, path:"basics", entryId:`daily-2026-10-07-${entry.id}` };
+    state = update(state, { type:"draft", ...item, value:JSON.stringify({ html:"<p>Daily edit</p>", css:"p { color: green; }" }) });
+    assert.equal(JSON.parse(state.drafts[learningKey(item)].value).html, "<p>Daily edit</p>");
   }
 });
 
@@ -120,7 +172,7 @@ function database() {
 test("learning API persists maximum-size escaped browser source for its own learner", async () => {
   const { sql, DB } = database();
   try {
-    const item = topic("html"), source = { html:"\u0000".repeat(webEditorLimit), css:"\u0000".repeat(webEditorLimit) };
+    const item = topic("html"), source = { html:"\u0000".repeat(webEditorLimit), css:"\u0000".repeat(webEditorLimit), explorerId:"h1" };
     const draft = event({ type:"draft", ...item, value:JSON.stringify(source) });
     const request = new Request("https://methodlab.example/api/learning", { method:"POST", headers:{ "oai-authenticated-user-id":"web-learner", "Content-Type":"application/json" }, body:JSON.stringify(draft) });
     assert.equal((await learningApi(request, { DB })).status, 200);

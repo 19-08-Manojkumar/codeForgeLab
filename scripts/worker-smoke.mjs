@@ -109,6 +109,32 @@ try {
   assert.deepEqual(restored.mistakes, []);
   assert.deepEqual(restored.daily, {});
 
+  const explorers = [
+    { language: "html", path: "render", entryId: "tag-explorer", title: "Learn each HTML tag", explorerId: "h6", html: "<h6>My saved heading</h6>", css: "body { padding: 20px; }" },
+    { language: "css", path: "render", entryId: "style-explorer", title: "Explore CSS styles", explorerId: "opacity", html: '<div class="demo">My saved style</div>', css: ".demo { opacity: .45; }" },
+  ];
+  for (const { explorerId, html: sourceHtml, css, ...topic } of explorers) {
+    await post(learner, event({ type: "visit", visit: { ...topic, mode: "learn" } }));
+    await post(learner, event({ type: "draft", ...topic, value: JSON.stringify({ html: sourceHtml, css, explorerId }) }));
+  }
+  const explorerState = await state(learner);
+  for (const { explorerId, html: sourceHtml, css, ...topic } of explorers) {
+    assert.deepEqual(JSON.parse(explorerState.drafts[`${topic.language}:render:${topic.entryId}`].value), { html: sourceHtml, css, explorerId }, "Packaged Worker restores the selected explorer example and source");
+  }
+  assert.deepEqual(explorerState.completed, restored.completed, "Selecting an example does not complete a lesson");
+
+  for (const language of ["html", "css"]) {
+    const entryId = language === "html" ? "elements" : "selectors";
+    for (const path of ["basics", "interviews", "problems"]) {
+      const topic = { language, path, entryId, title: "Browser practice" }, source = { html: "<p>Saved browser work</p>", css: "p { color: navy; }", ...(path === "interviews" ? { answer: "My explanation and example" } : {}) };
+      await post(learner, event({ type:"draft", ...topic, value:JSON.stringify(source) }));
+      await post(learner, event({ type:"complete", ...topic }));
+      assert.deepEqual(JSON.parse((await state(learner)).drafts[`${language}:${path}:${entryId}`].value), source);
+    }
+    for (const marker of ["concept", "prediction-0", "prediction-1", "prediction-2", "problem"]) await post(learner, event({ type:"daily", language, date:"2026-10-07", marker }));
+    assert.equal((await state(learner)).daily[`2026-10-07:${language}`].completed.length, 5);
+  }
+
   const javascriptTopic = { language: "javascript", path: "methods", entryId: "filter", title: "filter()" };
   await post(learner, event({ type: "visit", visit: { ...javascriptTopic, mode: "test", config: { input: "[2, 6]", parameter: "4" } } }));
   await post(learner, event({ type: "draft", ...javascriptTopic, config: { input: "[2, 6]" } }));
@@ -133,5 +159,5 @@ try {
   assert.deepEqual(await state(learner), withJavascript, "A second account cannot change the first account's progress");
   assert.equal((await fetchWorker(request("/api/learning", { userId: learner, update: event({ type: "welcome" }), headers: { Origin: "https://other.example" } }))).status, 403);
   assert.equal((await fetchWorker(request("/api/learning", { userId: learner, update: event({ type: "complete", language: "html", path: "render", entryId: "missing-lesson" }) }))).status, 400);
-  console.log(JSON.stringify({ passed: true, checks: ["built Worker default fetch", "embedded HTML/JS/CSS assets and HEAD/404", "HTML and CSS visits, drafts, bookmarks and completion", "stored source survives production serialization", "duplicate delivery is idempotent", "original JavaScript quiz and daily progress", "dispatched account isolation", "origin and curriculum validation"] }));
+  console.log(JSON.stringify({ passed: true, checks: ["built Worker default fetch", "embedded HTML/JS/CSS assets and HEAD/404", "HTML and CSS visits, drafts, bookmarks and completion", "selected explorer examples and source survive production serialization", "duplicate delivery is idempotent", "original JavaScript quiz and daily progress", "dispatched account isolation", "origin and curriculum validation"] }));
 } finally { sql.close(); }

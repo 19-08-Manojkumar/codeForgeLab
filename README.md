@@ -1,6 +1,6 @@
 # MethodLab
 
-A Next.js App Router practice website with a Sites Worker and D1-backed learning progress for JavaScript, Python, Java, C, HTML, and CSS. Each programming language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems. HTML and CSS open separate browser sessions with nine visual lessons each.
+A Next.js App Router practice website with a Sites Worker and D1-backed learning progress for JavaScript, Python, Java, C, HTML, and CSS. Each programming language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems. HTML and CSS have matching four-path hubs for the explorer, basics, interview preparation, and browser coding challenges. Their explorer retains ten lessons: a new first explorer followed by the original nine visual lessons.
 
 ## Run locally
 
@@ -28,22 +28,32 @@ After a wrong answer, try once more or reveal the explanation. A second wrong at
 
 The home and language dashboards offer a daily session with one concept, three distinct curriculum output predictions, and one guided coding expression. Plans are deterministic by local calendar date and language, and five completion markers resume after reloads. Reveals do not complete practice. Daily correct predictions and coding expressions also update topic progress.
 
+HTML and CSS daily sessions use a concept, three rendering exercises, and a final coding challenge. Each exercise grades the actual DOM and computed styles using the browser lesson's requirements. All six languages appear in the home daily selector. Web daily code uses dated drafts separate from ordinary topic edits, resumes the first unfinished step, and saves five completion markers without changing programming answer statistics. The browser basics and challenge paths reuse the original nine lessons; interview preparation provides nine questions per session with a model answer, checklist, follow-up, saved written explanation, and editable native example. Progress and bookmarks remain independent across paths.
+
+Editable HTML/CSS files and guided programming expressions support Ctrl+/ (Cmd+/ on macOS) and a Comment / uncomment button. Selected lines use HTML comments, CSS block comments, Python # comments, or // comments for JavaScript/Java/C. Toggling preserves unselected code, indentation, and blank lines. Code comments in guided expressions are ignored during checking, while punctuation inside strings and Python floor division are preserved. Data-only experiment fields continue to accept their documented JSON or scalar values.
+
 The mistake notebook captures first incorrect quiz attempts, output predictions, and coding expressions with explanations. Correct due reviews return after 1, 3, and 7 days; four successful due reviews mark a question reviewed. Extra same-day or early practice does not advance the schedule. The notebook keeps up to 100 recent questions, subject to a bounded Unicode-aware storage budget; cumulative answer statistics remain intact.
 
 ## Content and implementation
 
 HTML and CSS use editable `index.html` and `styles.css` files alongside an automatically updating browser preview. Each lesson has Teach, Learn, and Practice steps, explanations of tags or CSS properties, an element inspector, a page structure list, and a challenge checked against the rendered DOM and computed styles. The preview width supports mobile, tablet, desktop, and fitting its panel; changing width updates responsive styles and inspection values. Both sessions save their drafts, progress, bookmarks, and resume step independently. Revealing a solution does not complete a lesson or overwrite a learner's saved draft. Daily programming predictions and the mistake notebook remain for JavaScript, Python, Java, and C.
 
+The first HTML lesson lists 116 tags and embedded elements across 17 families. Headings opens individual h1–h6 examples with native browser defaults, and text, lists, forms, tables, media, and other families show each tag in its required context. The first CSS lesson groups 256 common standard properties into 13 topics, with 767 presets and a validated custom-value field. The inspector includes the selected property and can inspect generated content on pseudo-elements. Examples explain browser support and preview restrictions where relevant. Search matches tags, properties, and family names. The most recently selected example and its edits resume after reload; edits to other examples remain available while switching within the open explorer. HTML examples include 23 checked challenges; other explorer practice is a clearly labelled self-review. Completing either records the first lesson rather than adding hundreds of lessons to the session.
+
 The live preview runs in an opaque-origin iframe with `sandbox="allow-scripts"`. Learner code is embedded as escaped data, parsed and sanitized before insertion, and rendered by the browser. A nonce-protected teaching script handles inspection and challenge checks. Learner scripts, event handlers, external resources, form submission, and link navigation are disabled; self-contained data images work. CSS remains native, including selectors, inheritance, media queries, Flexbox, and Grid. The editor limits each file to 12,000 characters. Browser defaults and HTML error recovery apply, so challenges check the actual resulting elements and styles rather than raw source strings.
 
 - `app/web-workspace.jsx` and `app/web.css`: separate HTML/CSS learning sessions, responsive editors, live preview, tag/rule explanations, and inspection.
-- `lib/web-lessons.mjs`: nine HTML and nine CSS lessons with checked solutions and MDN sources.
+- `app/web-explorer.jsx`: searchable tag/property families, individual selection, and saved-example restoration.
+- `lib/web-lessons.mjs`: the first explorer and original nine checked lessons for each session, with MDN sources.
+- `lib/html-tags.mjs` and `lib/css-styles.mjs`: contextual tag and property examples, explanations, presets, and documentation references.
+- `lib/web-practice.mjs` and `app/web-daily-practice.jsx`: four browser paths, interview content, and five-step rendering practice.
+- `app/code-textarea.jsx` and `lib/code-comments.mjs`: shared keyboard/touch commenting and comment-aware guided expression checks.
 - `lib/web-preview.mjs`: isolated browser rendering, DOM inspection, matched CSS rules, computed styles, and challenge checks.
 - `tests/web-preview.test.mjs` and `tests/web-learning.test.mjs`: actual browser semantics, every lesson starter and solution, malicious markup isolation, responsive inspection, and durable web drafts.
 
 Home, practice hubs, and learning pages use colorful shooting stars and code that travels across the viewport. Every language has its own palette. Home has diagonal meteor passes, hubs have wider fans, Teach has rising code, Learn has horizontal streams, Test reverses the direction, and Practice uses rising emerald accents. Switching topics resets the scene to Teach; background pause persists across navigation. The footer credits Manoj Kumar and links to his portfolio. The header's Pause motion control freezes the background independently of lesson playback. Decorative elements ignore pointer input and assistive technology. Reduced-motion preferences keep a static background and disable entrance effects. Mobile screens use fewer moving elements.
 
-- `app/page.jsx` and `app/practice-app.jsx`: shared profile, four-language selection, four-path hub, and visit progress.
+- `app/page.jsx` and `app/practice-app.jsx`: shared profile, six-language selection, four-path hubs, and visit progress.
 - `app/method-workspace.jsx`: JavaScript/Python editable examples and quizzes.
 - `app/trace-player.jsx`, `app/native-playground.jsx`, and `app/animation.css`: shared responsive animation player and editable Java/C examples.
 - `lib/animation.mjs` and `lib/native-animation.mjs`: detailed read/evaluate/commit/return snapshots and 50 bounded Java/C models.
@@ -78,6 +88,10 @@ Optional WebMCP support exposes the same validated example configuration when th
 Run `npm test` for curriculum completeness, JavaScript example and exercise accuracy, guided expression handling, catalog, methods, quizzes, and learner profiles. On Windows with Microsoft Edge installed, build first and run `node scripts/ui-smoke.mjs` for the existing method/profile regression checks, then `node scripts/practice-smoke.mjs` for all four languages and paths, all 32 topic predictions, 64 interview cards, 28 guided exercises, 50 Java/C references, search, filters, keyboard tabs, progress, model answers, solutions, and all 16 language/path mobile layouts. Both use temporary local servers and hidden headless browsers and save screenshots in ignored `.sites-runtime/`.
 
 Run `node scripts/web-smoke.mjs` after building to verify the separate HTML/CSS flows, live edits and inspection, rendered-page challenges, saved drafts and resume, bookmarks, solution reveal behavior, and desktop/mobile layouts. The preview unit tests use a locally installed Edge, Chrome, or Chromium browser when available; set `METHODLAB_TEST_BROWSER` to another browser executable if needed. Browser tests skip when no compatible executable is installed.
+
+Run `node scripts/explorer-smoke.mjs` after building to verify grouped tag selection, native h1–h6 rendering, paragraph behavior, search, CSS presets and custom values, pseudo-element inspection, saved selection and edits, explorer self-review, and mobile layouts.
+
+Run `node scripts/web-paths-smoke.mjs` after building to verify both four-path browser hubs, interview answers, challenge reveal protection, the five-step HTML/CSS daily flows and reloads, keyboard/touch commenting, all web paths at 390px and 360px, and commented guided code across all four programming languages. `tests/code-comments.test.mjs` checks comment round-trips, selection boundaries, line endings, quoted punctuation, and Python floor division.
 
 Run `node scripts/worker-smoke.mjs` after building to verify the packaged production Worker serves its embedded assets and persists HTML, CSS, and programming events through SQLite with account isolation. This checks the built artifact, including its curriculum dependencies.
 

@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { buildWebPreview } from "../lib/web-preview.mjs";
 import { webLessons } from "../lib/web-lessons.mjs";
+import { htmlTags } from "../lib/html-tags.mjs";
 
 test("learner HTML, CSS, channels and challenge messages cannot break out of script data", () => {
   const attack = '</script><script>parent.compromised = true</script><img onerror="alert(1)">';
@@ -154,6 +155,38 @@ test("the isolated browser renders, inspects and checks learner changes", { skip
       assert.equal(inspected.inspection.tag, "p");
     });
 
+    await t.test("CSS explorer lessons show the selected property first in the computed inspector", async () => {
+      const ready=await browser.preview({html:'<p id="target">See-through text</p>',css:"#target { opacity: 0.45; }",lesson:{property:"opacity"}});
+      assert.equal(Object.keys(ready.inspection.styles)[0],"opacity");
+      assert.equal(ready.inspection.styles.opacity,"0.45");
+      assert.equal(ready.inspection.styles.display,"block");
+      const duplicate=await browser.preview({html:"<p>Blue text</p>",css:"p { color: blue; }",lesson:{property:"color"}});
+      assert.equal(Object.keys(duplicate.inspection.styles)[0],"color");
+      assert.equal(Object.keys(duplicate.inspection.styles).filter(key=>key==="color").length,1);
+      const invalid=await browser.preview({html:"<p>Safe property</p>",lesson:{property:"color; opacity"}});
+      assert.equal(Object.keys(invalid.inspection.styles)[0],"color");
+      assert.equal(Object.hasOwn(invalid.inspection.styles,"color; opacity"),false);
+    });
+
+    await t.test("generated content and placeholder demos inspect their own pseudo-element styles", async () => {
+      await browser.preview({html:'<p id="demo">Real paragraph</p>',css:'#demo::before { content: "Before text"; color: purple; } #demo::after { content: "After text"; color: orange; }',lesson:{property:"content"}});
+      const before=await browser.message({type:"inspect-selector",selector:"#demo::before"},"inspection");
+      assert.equal(before.inspection.tag,"p");
+      assert.equal(before.inspection.pseudo,"::before");
+      assert.equal(before.inspection.selector,"#demo::before");
+      assert.equal(before.inspection.styles.content,'"Before text"');
+      assert.equal(before.inspection.styles.color,"rgb(128, 0, 128)");
+      assert.deepEqual(before.inspection.matchingCss.map(rule=>rule.selector),["#demo::before"]);
+      const paragraph=await browser.message({type:"inspect-selector",selector:"#demo"},"inspection");
+      assert.equal(paragraph.inspection.pseudo,null);
+      assert.equal(paragraph.inspection.styles.content,"normal");
+      await browser.preview({html:'<input id="entry" placeholder="Your name">',css:"#entry::placeholder { color: blue; }",lesson:{property:"color"}});
+      const placeholder=await browser.message({type:"inspect-selector",selector:"#entry::placeholder"},"inspection");
+      assert.equal(placeholder.inspection.pseudo,"::placeholder");
+      assert.equal(placeholder.inspection.styles.color,"rgb(0, 0, 255)");
+      assert.deepEqual(placeholder.inspection.matchingCss.map(rule=>rule.selector),["#entry::placeholder"]);
+    });
+
     await t.test("script, event handlers, embeds and closing tag attacks remain inert", async () => {
       const ready = await browser.preview({
         html: `<script>parent.compromised=true</script><meta http-equiv="refresh" content="0;url=https://example.com"><base href="https://example.com"><iframe srcdoc="<script>parent.compromised=true</script>"></iframe><object data="https://example.com"></object><embed src="https://example.com"><p id="safe" onclick="parent.compromised=true">Safe text</p><img onerror="parent.compromised=true" src="bad"><a href="java&#x73;cript:parent.compromised=true">Link</a><style>p { color: purple }</style>`,
@@ -193,6 +226,18 @@ test("the isolated browser renders, inspects and checks learner changes", { skip
           assert.equal(solution.checks.length, lesson.challenge.checks.length);
           for (const check of solution.checks) assert.equal(check.passed, true, `${language}:${lesson.id} — ${check.message}`);
         }
+      }
+    });
+
+    await t.test("all individual tag challenges grade the actual starter and solution", async () => {
+      for (const lesson of htmlTags.filter(entry => entry.challenge)) {
+        await browser.preview({ html: lesson.html, css: lesson.css, lesson });
+        const starter = await browser.message({ type: "check" }, "checked");
+        assert.ok(starter.checks.some(check => !check.passed), `${lesson.id} starter needs an edit`);
+        await browser.preview({ ...lesson.challenge.solution, lesson });
+        const solution = await browser.message({ type: "check" }, "checked");
+        assert.equal(solution.checks.length, lesson.challenge.checks.length);
+        assert.ok(solution.checks.every(check => check.passed), `${lesson.id}: ${JSON.stringify(solution.checks)}`);
       }
     });
 

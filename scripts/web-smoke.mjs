@@ -119,7 +119,9 @@ try {
   };
   const openWeb = async language => {
     await evaluate(`document.querySelector('.language-card[data-language=${language}]').click()`);
-    await wait("document.querySelector('.web-workspace') && document.querySelectorAll('.web-workspace .topic-button').length === 9");
+    await wait("document.querySelectorAll('.practice-path-card').length === 4");
+    await evaluate("document.querySelector('.practice-path-card[data-path=render]').click()");
+    await wait("document.querySelector('.web-workspace') && document.querySelectorAll('.web-workspace .topic-button').length === 10");
     await ready();
     assert.equal(await evaluate("document.querySelector('.app-scene').dataset.path"), "render");
     assert.equal(await evaluate("document.querySelectorAll('.practice-path-card').length"), 0);
@@ -136,7 +138,7 @@ try {
     await wait(`window.__webMessages.filter(item => item.type === 'inspection').length > ${before}`);
     return lastMessage("inspection");
   };
-  const dailyLanguages = async () => assert.deepEqual(await evaluate("[...document.querySelectorAll('.daily-language-label select option')].map(item => item.value)"), ["javascript", "python", "java", "c"]);
+  const dailyLanguages = async () => assert.deepEqual(await evaluate("[...document.querySelectorAll('.daily-language-label select option')].map(item => item.value)"), ["javascript", "python", "java", "c", "html", "css"]);
   const reload = async () => {
     await saved();
     await page("Page.reload", { ignoreCache:true });
@@ -157,11 +159,13 @@ try {
   console.log("Web smoke: home ready");
 
   if (!mobileOnly) {
-  const htmlLesson = webLessons.html[0], cssLesson = webLessons.css[0];
+  const htmlLesson = webLessons.html.find(lesson => lesson.id === "elements"), cssLesson = webLessons.css.find(lesson => lesson.id === "selectors");
   const htmlKey = `html:render:${htmlLesson.id}`, cssKey = `css:render:${cssLesson.id}`;
   const customHtml = '<article class="card"><h1>Live HTML works</h1><p>A new paragraph appears in the browser.</p></article>';
   const customCss = htmlLesson.css + "\nh1 { color: #6a28a0; }";
   await openWeb("html");
+  await evaluate("document.querySelector('.topic-button[data-entry=elements]').click()");
+  await ready();
   assert.ok((await lastMessage("ready")).nodes.some(node => node.tag === "h1" && node.text === "My first web page"));
   await evaluate("document.querySelector('#web-step-1').click()");
   await edit("html", customHtml);
@@ -238,8 +242,11 @@ try {
   assert.deepEqual((await data()).completed["html:render"], [htmlLesson.id]);
   console.log("Web smoke: HTML persistence and challenge checked");
 
-  await click("CSS session", ".web-session-navigation button");
-  await wait("document.querySelector('.app-scene').dataset.language === 'css' && document.querySelectorAll('.web-workspace .topic-button').length === 9");
+  await evaluate("[...document.querySelectorAll('.language-switch button')].find(button => button.textContent.endsWith('CSS')).click()");
+  await wait("document.querySelectorAll('.practice-path-card').length === 4");
+  await evaluate("document.querySelector('.practice-path-card[data-path=render]').click()");
+  await wait("document.querySelector('.app-scene').dataset.language === 'css' && document.querySelectorAll('.web-workspace .topic-button').length === 10");
+  await evaluate("document.querySelector('.topic-button[data-entry=selectors]').click()");
   await ready();
   assert.equal(await evaluate("document.querySelectorAll('.practice-path-card').length"), 0);
   await evaluate("document.querySelector('#web-step-1').click()");
@@ -316,11 +323,11 @@ try {
   }
   console.log("Web smoke: mobile layouts checked");
   assert.equal(errors.length, 0, "No browser runtime exceptions");
-  console.log(JSON.stringify({ passed:true, checks:mobileOnly ? ["six home cards", "HTML/CSS open directly with nine lessons", "mobile header language buttons fit without overlap", "mobile390/360 browser previews and width controls", "no runtime exceptions"] : [
-    "six home cards and separate HTML/CSS browser sessions", "nine lessons per browser session", "live markup and computed CSS changes",
+  console.log(JSON.stringify({ passed:true, checks:mobileOnly ? ["six home cards", "HTML/CSS open directly with ten lessons", "mobile header language buttons fit without overlap", "mobile390/360 browser previews and width controls", "no runtime exceptions"] : [
+    "six home cards and separate HTML/CSS browser sessions", "ten lessons per browser session with original lessons preserved", "live markup and computed CSS changes",
     "element inspector and rendered DOM tree", "preview width controls", "wrong challenge answers remain incomplete", "independent HTML/CSS completion",
     "stale check responses ignored after edits", "revealed solutions do not save or complete", "bookmarks and drafts survive reload",
-    "four programming daily choices and original practice hubs", "desktop and mobile390/360 layouts", "no runtime exceptions",
+    "six daily choices and original programming practice hubs", "desktop and mobile390/360 layouts", "no runtime exceptions",
   ], screenshots:mobileOnly ? ["web-mobile.png"] : ["web-html-desktop.png", "web-css-desktop.png", "web-mobile.png"] }));
   await call("Browser.close").catch(() => {});
 } catch (error) {

@@ -5,9 +5,10 @@ async function collect(directory,path="") {for(const item of (await readdir(dire
 await collect("out");
 const learner=(await readFile("lib/learner.mjs","utf8")).replace(/^export /gm,"");
 const webCurriculum=(await readFile("lib/web-lessons.mjs","utf8")).replace(/^export /gm,"");
+const webPractice=(await readFile("lib/web-practice.mjs","utf8")).replace(/^import .*;\r?\n/gm,"").replace(/^export /gm,"");
 const state=(await readFile("lib/learning-state.mjs","utf8")).replace(/^import .*;\r?\n/gm,"").replace(/^export /gm,"");
 const worker=(await readFile("server/worker.mjs","utf8")).replace(/^import .*;\r?\n/gm,"").replace(/^export (async function|function)/gm,"$1");
 await mkdir("dist/server",{recursive:true});await mkdir("dist/.openai",{recursive:true});
-await writeFile("dist/server/index.js",`const STATIC_ASSETS=${JSON.stringify(assetMap)};\n${learner}\n${webCurriculum}\n${state}\n${worker}`);
+await writeFile("dist/server/index.js",`const STATIC_ASSETS=${JSON.stringify(assetMap)};\n${learner}\n${webCurriculum}\n${webPractice}\n${state}\n${worker}`);
 await cp(".openai/hosting.json","dist/.openai/hosting.json");await cp("drizzle","dist/.openai/drizzle",{recursive:true});
 console.log(`Worker packaged with ${Object.keys(assetMap).length} static assets and durable learning storage.`);
