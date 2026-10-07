@@ -7,7 +7,7 @@ import vm from "node:vm";
 import { lessons, defaultConfig } from "../lib/lessons.mjs";
 import { buildTrace, format } from "../lib/engine.mjs";
 import { curricula, getPracticeEntries } from "../lib/curriculum.mjs";
-import { languages } from "../lib/practice.mjs";
+import { programmingLanguages as languages } from "../lib/practice.mjs";
 
 // A bounded local smoke check using the installed Edge browser; no browser downloads.
 const root=resolve("out"),runtime=resolve(".sites-runtime");
@@ -47,7 +47,7 @@ try{
  const popupTitle=()=>evalJS("document.querySelector('.success-copy strong')?.textContent");
  const dismiss=async()=>{await evalJS("document.querySelector('.success-dismiss').click()");await waitFor("!document.querySelector('.success-popup')");};
  await pageCall('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
- await pageCall('Page.navigate',{url});await waitFor("document.querySelectorAll('.language-card').length===4 && Object.keys(document.querySelector('.language-card')).some(k=>k.startsWith('__reactProps'))");await waitFor("document.querySelector('.learner-dialog').open");await click('Skip for now');await waitFor("!document.querySelector('.learner-dialog').open");
+ await pageCall('Page.navigate',{url});await waitFor("document.querySelectorAll('.language-card').length===6 && Object.keys(document.querySelector('.language-card')).some(k=>k.startsWith('__reactProps'))");await waitFor("document.querySelector('.learner-dialog').open");await click('Skip for now');await waitFor("!document.querySelector('.learner-dialog').open");
  for(const language of Object.keys(languages)){
    await chooseLanguage(language);await choosePath('basics');await tab(2);const entry=curricula[language].topics[0];
    await setField('output-prediction','wrong output');await click('Check prediction');await waitFor("document.querySelector('.practice-feedback.retry')");assert.equal(await evalJS("!!document.querySelector('.success-popup')"),false,'Wrong answers do not celebrate');

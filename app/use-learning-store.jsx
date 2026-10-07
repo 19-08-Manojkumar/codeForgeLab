@@ -12,7 +12,7 @@ export default function useLearningStore() {
     busy.current=true;setStatus("saving");
     try {
       while(pending.current.length){
-        const event=pending.current[0],response=await fetch("/api/learning",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(event),signal:AbortSignal.timeout(10000),keepalive:true});
+        const event=pending.current[0],body=JSON.stringify(event),response=await fetch("/api/learning",{method:"POST",headers:{"Content-Type":"application/json"},body,signal:AbortSignal.timeout(10000),keepalive:new TextEncoder().encode(body).length<=60000});
         if(!response.ok)throw new Error("Save unavailable");const saved=await response.json();pending.current.shift();
         publish(pending.current.reduce((value,queued)=>applyLearningEvent(value,queued),saved.state));
       }

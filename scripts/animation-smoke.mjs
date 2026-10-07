@@ -10,7 +10,7 @@ import { buildAnimationTrace, animationFormat } from "../lib/animation.mjs";
 import { defaultNativeConfig } from "../lib/native-animation.mjs";
 import { editedNativeCases } from "../tests/animation-cases.mjs";
 import { curricula, getPracticeEntries } from "../lib/curriculum.mjs";
-import { languages } from "../lib/practice.mjs";
+import { programmingLanguages as languages } from "../lib/practice.mjs";
 
 // A bounded local smoke check using the installed Edge browser; no browser downloads.
 const root=resolve("out"),runtime=resolve(".sites-runtime");
@@ -51,7 +51,7 @@ try{
  const finish=async()=>{const total=await evalJS("Number(document.querySelector('#trace-position').max)");await seek(total);await waitFor("document.querySelector('.trace-player').dataset.stage==='return'");};
  const expectedText=(trace,language)=>Array.isArray(trace.result)?trace.result.length?trace.result.map(v=>animationFormat(v,language)).join(''):'[ ] — empty result':trace.resultPresentation==='label'&&typeof trace.result==='string'?trace.result:animationFormat(trace.result,language);
  await pageCall("Emulation.setDeviceMetricsOverride",{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
- await pageCall("Page.navigate",{url});await waitFor("document.querySelectorAll('.language-card').length===4 && Object.keys(document.querySelector('.language-card')).some(k=>k.startsWith('__reactProps'))");await waitFor("document.querySelector('.learner-dialog').open");await click('Skip for now');await waitFor("!document.querySelector('.learner-dialog').open");
+ await pageCall("Page.navigate",{url});await waitFor("document.querySelectorAll('.language-card').length===6 && Object.keys(document.querySelector('.language-card')).some(k=>k.startsWith('__reactProps'))");await waitFor("document.querySelector('.learner-dialog').open");await click('Skip for now');await waitFor("!document.querySelector('.learner-dialog').open");
  for(const language of ['javascript','python']){
    await chooseLanguage(language);await choosePath('methods');
    for(const lesson of lessons[language]){await selectTopic(lesson.id,language);const trace=buildAnimationTrace(lesson,defaultConfig(lesson));await waitFor("document.querySelector('.trace-player')");assert.equal(await evalJS("document.querySelector('.trace-player').dataset.animationMode"),trace.mode);await seek(1);assert.equal(await evalJS("document.querySelector('.trace-player').dataset.stage"),'read');await finish();assert.equal(await evalJS("document.querySelector('.output-row').textContent.trim()"),expectedText(trace,language),language+':'+lesson.id);}

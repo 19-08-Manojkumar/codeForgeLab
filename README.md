@@ -1,6 +1,6 @@
 # MethodLab
 
-A Next.js App Router practice website with a Sites Worker and D1-backed learning progress for JavaScript, Python, Java, and C. Each language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems.
+A Next.js App Router practice website with a Sites Worker and D1-backed learning progress for JavaScript, Python, Java, C, HTML, and CSS. Each programming language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems. HTML and CSS open separate browser sessions with nine visual lessons each.
 
 ## Run locally
 
@@ -31,6 +31,15 @@ The home and language dashboards offer a daily session with one concept, three d
 The mistake notebook captures first incorrect quiz attempts, output predictions, and coding expressions with explanations. Correct due reviews return after 1, 3, and 7 days; four successful due reviews mark a question reviewed. Extra same-day or early practice does not advance the schedule. The notebook keeps up to 100 recent questions, subject to a bounded Unicode-aware storage budget; cumulative answer statistics remain intact.
 
 ## Content and implementation
+
+HTML and CSS use editable `index.html` and `styles.css` files alongside an automatically updating browser preview. Each lesson has Teach, Learn, and Practice steps, explanations of tags or CSS properties, an element inspector, a page structure list, and a challenge checked against the rendered DOM and computed styles. The preview width supports mobile, tablet, desktop, and fitting its panel; changing width updates responsive styles and inspection values. Both sessions save their drafts, progress, bookmarks, and resume step independently. Revealing a solution does not complete a lesson or overwrite a learner's saved draft. Daily programming predictions and the mistake notebook remain for JavaScript, Python, Java, and C.
+
+The live preview runs in an opaque-origin iframe with `sandbox="allow-scripts"`. Learner code is embedded as escaped data, parsed and sanitized before insertion, and rendered by the browser. A nonce-protected teaching script handles inspection and challenge checks. Learner scripts, event handlers, external resources, form submission, and link navigation are disabled; self-contained data images work. CSS remains native, including selectors, inheritance, media queries, Flexbox, and Grid. The editor limits each file to 12,000 characters. Browser defaults and HTML error recovery apply, so challenges check the actual resulting elements and styles rather than raw source strings.
+
+- `app/web-workspace.jsx` and `app/web.css`: separate HTML/CSS learning sessions, responsive editors, live preview, tag/rule explanations, and inspection.
+- `lib/web-lessons.mjs`: nine HTML and nine CSS lessons with checked solutions and MDN sources.
+- `lib/web-preview.mjs`: isolated browser rendering, DOM inspection, matched CSS rules, computed styles, and challenge checks.
+- `tests/web-preview.test.mjs` and `tests/web-learning.test.mjs`: actual browser semantics, every lesson starter and solution, malicious markup isolation, responsive inspection, and durable web drafts.
 
 Home, practice hubs, and learning pages use colorful shooting stars and code that travels across the viewport. Every language has its own palette. Home has diagonal meteor passes, hubs have wider fans, Teach has rising code, Learn has horizontal streams, Test reverses the direction, and Practice uses rising emerald accents. Switching topics resets the scene to Teach; background pause persists across navigation. The footer credits Manoj Kumar and links to his portfolio. The header's Pause motion control freezes the background independently of lesson playback. Decorative elements ignore pointer input and assistive technology. Reduced-motion preferences keep a static background and disable entrance effects. Mobile screens use fewer moving elements.
 
@@ -67,6 +76,8 @@ Optional WebMCP support exposes the same validated example configuration when th
 ## Validation
 
 Run `npm test` for curriculum completeness, JavaScript example and exercise accuracy, guided expression handling, catalog, methods, quizzes, and learner profiles. On Windows with Microsoft Edge installed, build first and run `node scripts/ui-smoke.mjs` for the existing method/profile regression checks, then `node scripts/practice-smoke.mjs` for all four languages and paths, all 32 topic predictions, 64 interview cards, 28 guided exercises, 50 Java/C references, search, filters, keyboard tabs, progress, model answers, solutions, and all 16 language/path mobile layouts. Both use temporary local servers and hidden headless browsers and save screenshots in ignored `.sites-runtime/`.
+
+Run `node scripts/web-smoke.mjs` after building to verify the separate HTML/CSS flows, live edits and inspection, rendered-page challenges, saved drafts and resume, bookmarks, solution reveal behavior, and desktop/mobile layouts. The preview unit tests use a locally installed Edge, Chrome, or Chromium browser when available; set `METHODLAB_TEST_BROWSER` to another browser executable if needed. Browser tests skip when no compatible executable is installed.
 
 Run `node scripts/animation-smoke.mjs` after building to check all 100 animations, every Java/C method with edited values, filter phases, return/changed-state separation, playback controls, invalid input, mobile layouts, keyboard scrubbing, and reduced motion. `tests/animation.test.mjs` independently checks changed-value results, overlapping memory, truncation, early search stops, parsing, return types, and snapshots. Local Java/C compilers are not installed; their generated examples are reviewed and their teaching models tested, without claiming compiler execution.
 

@@ -7,7 +7,7 @@ import vm from "node:vm";
 import { lessons, defaultConfig } from "../lib/lessons.mjs";
 import { buildTrace, format } from "../lib/engine.mjs";
 import { curricula, getPracticeEntries } from "../lib/curriculum.mjs";
-import { languages } from "../lib/practice.mjs";
+import { programmingLanguages as languages } from "../lib/practice.mjs";
 
 // A bounded local smoke check using the installed Edge browser; no browser downloads.
 const root=resolve("out"),runtime=resolve(".sites-runtime");
@@ -17,13 +17,13 @@ const types={".html":"text/html",".js":"text/javascript",".css":"text/css",".svg
 const server=createServer(async(req,res)=>{try{const path=decodeURIComponent(new URL(req.url,"http://localhost").pathname);const target=resolve(root,"."+path+(path.endsWith("/")?"index.html":""));if(!target.startsWith(root+"\\")&&target!==root){res.writeHead(403);res.end();return;}const bytes=await readFile(target);res.writeHead(200,{"Content-Type":types[extname(target)]||"application/octet-stream"});res.end(bytes);}catch{res.writeHead(404);res.end();}});
 await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
 const url=`http://127.0.0.1:${server.address().port}/`;
-const browser=spawn("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",["--headless=new","--disable-gpu","--no-first-run","--no-default-browser-check","--remote-debugging-port=0",`--user-data-dir=${join(runtime,`smoke-browser-${process.pid}`)}`,"about:blank"],{windowsHide:true,stdio:["ignore","ignore","pipe"]});
+const browser=spawn("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",["--headless=new","--no-sandbox","--disable-gpu","--no-first-run","--no-default-browser-check","--disable-background-timer-throttling","--disable-renderer-backgrounding","--disable-backgrounding-occluded-windows","--remote-debugging-port=0",`--user-data-dir=${join(runtime,`smoke-browser-${process.pid}`)}`,"about:blank"],{windowsHide:true,stdio:["ignore","ignore","pipe"]});
 let socket;
 try{
  const endpoint=await new Promise((resolve,reject)=>{let output="";const timeout=setTimeout(()=>reject(new Error("Browser startup timed out.")),20000);browser.on("error",reject);browser.stderr.on("data",b=>{output+=b;const match=output.match(/DevTools listening on (ws:\/\/[^\s]+)/);if(match){clearTimeout(timeout);resolve(match[1]);}});});
  socket=new WebSocket(endpoint);await new Promise((resolve,reject)=>{socket.addEventListener("open",resolve,{once:true});socket.addEventListener("error",reject,{once:true});});
  let nextId=0;const pending=new Map();socket.addEventListener("message",event=>{const m=JSON.parse(event.data);if(m.id){const p=pending.get(m.id);if(p){pending.delete(m.id);m.error?p.reject(new Error(m.error.message)):p.resolve(m.result);}}if(m.method==="Runtime.exceptionThrown")errors.push(m.params.exceptionDetails.text);});
- const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{const id=++nextId;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})}));});
+ const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{const id=++nextId,timer=setTimeout(()=>{pending.delete(id);reject(new Error("Browser command timed out: "+method));},20000);pending.set(id,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});socket.send(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})}));});
  const {targetId}=await call("Target.createTarget",{url:"about:blank"});const {sessionId}=await call("Target.attachToTarget",{targetId,flatten:true});
  const pageCall=(m,p)=>call(m,p,sessionId);await pageCall("Runtime.enable");await pageCall("Page.enable");
  const evalJS=async(expression)=>{const r=await pageCall("Runtime.evaluate",{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value;};
@@ -45,7 +45,7 @@ try{
  const tab=async(index)=>{await evalJS(`document.querySelector('#flow-tab-${index}').click()`);await waitFor(`document.querySelector('#flow-tab-${index}').getAttribute('aria-selected')==='true'`);};
  const shot=async(name)=>{await new Promise(resolve=>setTimeout(resolve,250));const result=await pageCall("Page.captureScreenshot",{format:"png",captureBeyondViewport:true});await writeFile(join(runtime,name),Buffer.from(result.data,"base64"));};
  await pageCall("Emulation.setDeviceMetricsOverride",{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
- await pageCall("Page.navigate",{url});await waitFor("document.querySelectorAll('.language-card').length===4 && Object.keys(document.querySelector('.language-card')).some(k=>k.startsWith('__reactProps'))");await waitFor("document.querySelector('.learner-dialog').open");await click("Skip for now");await waitFor("!document.querySelector('.learner-dialog').open");await shot("practice-home.png");
+ await pageCall("Page.navigate",{url});await waitFor("document.querySelectorAll('.language-card').length===6 && Object.keys(document.querySelector('.language-card')).some(k=>k.startsWith('__reactProps'))");await waitFor("document.querySelector('.learner-dialog').open");await click("Skip for now");await waitFor("!document.querySelector('.learner-dialog').open");await shot("practice-home.png");
  for(const language of Object.keys(languages)){
    await chooseLanguage(language);assert.equal(await evalJS("document.querySelector('[data-path=methods]').textContent.includes('25 methods & functions')"),true,language+" method count");assert.equal(await evalJS("document.querySelector('[data-path=basics]').textContent.includes('8 topics')"),true);assert.equal(await evalJS("document.querySelector('[data-path=interviews]').textContent.includes('16 questions')"),true);if(language==="java")await shot("practice-paths.png");
    await choosePath("basics");assert.equal(await evalJS("document.querySelectorAll('.path-navigation button').length"),4);const topics=getPracticeEntries(language,"basics");

@@ -14,8 +14,8 @@ export async function learningApi(request,env) {
     if(request.method!=="POST")return jsonResponse({error:"Method not allowed."},405);
     const origin=request.headers.get("Origin");if(origin&&origin!==new URL(request.url).origin)return jsonResponse({error:"Request origin does not match."},403);
     if(!request.headers.get("Content-Type")?.startsWith("application/json"))return jsonResponse({error:"Send a JSON learning update."},415);
-    if(Number(request.headers.get("Content-Length"))>30000)return jsonResponse({error:"Learning update is too large."},413);
-    const body=await request.text();if(new TextEncoder().encode(body).length>30000)return jsonResponse({error:"Learning update is too large."},413);
+    if(Number(request.headers.get("Content-Length"))>200000)return jsonResponse({error:"Learning update is too large."},413);
+    const body=await request.text();if(new TextEncoder().encode(body).length>200000)return jsonResponse({error:"Learning update is too large."},413);
     let event;try{event=JSON.parse(body);}catch{return jsonResponse({error:"Invalid update."},400);}
     if(!event||typeof event!=="object"||!/^[\w-]{10,80}$/.test(event.id||"")||typeof event.type!=="string")return jsonResponse({error:"Invalid update."},400);
     for(let attempt=0;attempt<4;attempt++) {

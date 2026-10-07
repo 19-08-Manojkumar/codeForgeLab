@@ -2,11 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import vm from "node:vm";
 import { curricula, getPracticeEntries } from "../lib/curriculum.mjs";
-import { languages, practicePaths, filterPracticeEntries, normalizeExpression, checkGuidedExpression, normalizeOutput } from "../lib/practice.mjs";
+import { languages, programmingLanguages, practicePaths, filterPracticeEntries, normalizeExpression, checkGuidedExpression, normalizeOutput } from "../lib/practice.mjs";
 import { format } from "../lib/engine.mjs";
 
 test("all four language paths have complete, linked curriculum content",()=>{
-  assert.deepEqual(Object.keys(languages),["javascript","python","java","c"]);
+  assert.deepEqual(Object.keys(programmingLanguages),["javascript","python","java","c"]);
+  assert.deepEqual(Object.keys(languages),["javascript","python","java","c","html","css"]);
   assert.equal(practicePaths.length,4);
   for(const [language,curriculum] of Object.entries(curricula)) {
     assert.equal(curriculum.topics.length,8,language);

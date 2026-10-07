@@ -1,4 +1,6 @@
 const snippets = {
+  html: ["<h1>Hello, browser</h1>", "<main>...</main>", '<img alt="A sunrise">', "<button>Try it</button>", "<section>...</section>", "<label>Name</label>"],
+  css: [".card { padding: 24px; }", "display: grid;", "color: coral;", "gap: 16px;", "@media (max-width: 600px)", "border-radius: 12px;"],
   javascript: ["const idea = 'hello';", "input.filter(n => n > 5)", "return result;", "items.map(n => n * 2)", "let progress = 0;", "learn(); practice();"],
   python: ["def learn():", "for item in values:", "return result", "sorted(values)", "print('hello')", "[n * 2 for n in values]"],
   java: ["class Hello { }", "return result;", "List.of(1, 2, 3)", "Arrays.sort(values);", "String idea = \"hello\";", "System.out.println(result);"],

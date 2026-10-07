@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { CodeBlock, Icon } from "./method-workspace";
-import { languages, normalizeOutput, normalizeExpression } from "../lib/practice.mjs";
+import { programmingLanguages as languages, normalizeOutput, normalizeExpression } from "../lib/practice.mjs";
 import { dueMistakes, localDay } from "../lib/learning-state.mjs";
 
 function MistakeReview({item,onAnswer,openTopic}) {
