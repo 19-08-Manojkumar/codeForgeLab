@@ -1,6 +1,8 @@
-# MethodLab
+# CodeForge Lab
 
 A Next.js App Router practice website with a Sites Worker and D1-backed learning progress for JavaScript, Python, Java, C, HTML, and CSS. Each programming language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems. HTML and CSS have matching four-path hubs for the explorer, basics, interview preparation, and browser coding challenges. Their explorer retains ten lessons: a new first explorer followed by the original nine visual lessons.
+
+The planned public domain is `https://codeforge-lab.vercel.app`. Shared branding covers the header, footer, welcome dialog, page title, and social metadata. After the six home course cards, Explore other areas links to [DataForge DB](https://dataforge-db.vercel.app/) for SQL/NoSQL and [Data Science Forge](https://data-science-forge.vercel.app/) for data science and analytics. These external learning cards open in a new tab. Domain provisioning and a Vercel deployment are separate from the branding update. Legacy browser-storage keys are retained so existing profiles and quiz history continue to load.
 
 ## Run locally
 

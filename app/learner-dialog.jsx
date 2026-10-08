@@ -69,7 +69,7 @@ export default function LearnerDialog({ open, profile, save, cancel, clear }) {
 
   return <dialog ref={dialogRef} className="learner-dialog" aria-labelledby="profile-title" aria-describedby="profile-intro" onKeyDown={keepFocusInDialog} onCancel={event => { event.preventDefault(); cancel(); }}>
     <div className="profile-topline"><span className="profile-code-mark" aria-hidden="true">{"{ "}<bdi>{displayName}</bdi>{" }"}</span><span className="eyebrow">YOUR LEARNING, YOUR PACE</span><button className="profile-close" onClick={cancel} aria-label={profile ? "Cancel profile changes" : "Skip welcome form"}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-    <h2 id="profile-title">{profile ? "Your learning profile" : "Make MethodLab yours"}<span className="brand-period">.</span></h2>
+    <h2 id="profile-title">{profile ? "Your learning profile" : "Make CodeForge Lab yours"}<span className="brand-period">.</span></h2>
     <p id="profile-intro">Tell us a little about yourself for a personal welcome and encouragement as you learn.</p>
     <form onSubmit={submit} noValidate>
       <div className="profile-field-row">

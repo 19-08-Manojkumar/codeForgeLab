@@ -24,4 +24,4 @@ const server = createServer(async (request, response) => {
   }
 });
 server.on("error", error => { console.error(error.message); process.exitCode = 1; });
-server.listen(port, "127.0.0.1", () => console.log(`MethodLab is ready at http://localhost:${port}`));
+server.listen(port, "127.0.0.1", () => console.log(`CodeForge Lab is ready at http://localhost:${port}`));

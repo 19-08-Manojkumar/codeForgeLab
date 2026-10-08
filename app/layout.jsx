@@ -4,10 +4,17 @@ import "./animation.css";
 import "./atmosphere.css";
 import "./learning.css";
 import "./web.css";
+import "./related-learning.css";
+import { siteBrand } from "../lib/site.mjs";
 
 export const metadata = {
-  title: "MethodLab — See how code works",
-  description: "Practice JavaScript, Python, Java, and C, and learn HTML and CSS with editable code, live browser previews, and visual explanations.",
+  metadataBase: new URL(siteBrand.url),
+  title: siteBrand.title,
+  applicationName: siteBrand.name,
+  description: siteBrand.description,
+  alternates: { canonical: "/" },
+  openGraph: { type: "website", siteName: siteBrand.name, title: siteBrand.title, description: siteBrand.description, url: "/" },
+  twitter: { card: "summary", title: siteBrand.title, description: siteBrand.description },
   icons: { icon: "/icon.svg" },
 };
 
