@@ -7,11 +7,12 @@ import WebWorkspace from "./web-workspace";
 import LearnerDialog, { LearnerBanner } from "./learner-dialog";
 import CodeAtmosphere from "./code-atmosphere";
 import useLearningStore from "./use-learning-store";
+import useAccount from "./use-account";
+import AccountDialog from "./account-dialog";
 import LearningDashboard, { SaveStatus } from "./learning-dashboard";
 import DailyPractice from "./daily-practice";
 import MistakeNotebook from "./mistake-notebook";
 import { learningKey } from "../lib/learning-state.mjs";
-import { readLearnerSession, saveLearnerSession } from "../lib/learner.mjs";
 import { languages, practicePaths } from "../lib/practice.mjs";
 import { curricula } from "../lib/curriculum.mjs";
 import { lessons, defaultConfig } from "../lib/lessons.mjs";
@@ -27,18 +28,18 @@ const pathCount = (language, path) => webSessions[language] ? getWebPracticeEntr
 
 export default function PracticeApp() {
   const [language, setLanguage] = useState(null), [path, setPath] = useState(null), [initialEntry, setInitialEntry] = useState(null);
-  const [profile, setProfile] = useState(null), [profileOpen, setProfileOpen] = useState(false);
-  const learning=useLearningStore(), {state:learningState,dispatch}=learning,completed=learningState.completed;
+  const [profileOpen, setProfileOpen] = useState(false), [accountOpen, setAccountOpen] = useState(false);
+  const account=useAccount(), learning=useLearningStore(account), {state:learningState,dispatch}=learning,completed=learningState.completed,profile=learningState.profile;
   const [screen,setScreen]=useState("browse"),[resumeMode,setResumeMode]=useState("learn");
   const [experiment, setExperiment] = useState(null), [workspaceRevision, setWorkspaceRevision] = useState(0);
   const [backgroundPaused, setBackgroundPaused] = useState(false);
   const [session, setSession] = useState("home");
   const activeSession = screen==="daily"?session:screen==="notebook"?"test":!language ? "home" : !path ? "hub" : session;
-  const headingRef = useRef(null), initializedRef = useRef(false),profileHydrated=useRef(false);
-  useEffect(()=>{if(learning.status!=="loading"&&!profileHydrated.current){let storage;try{storage=sessionStorage;}catch{}const legacy=readLearnerSession(storage);profileHydrated.current=true;setProfile(learningState.handled?learningState.profile:legacy.profile);setProfileOpen(!learningState.handled&&!legacy.handled);}},[learning.status,learningState.handled,learningState.profile]);
+  const headingRef = useRef(null), initializedRef = useRef(false),profileHydrated=useRef(null);
+  useEffect(()=>{if(["guest","guest-unsaved","saved","saving"].includes(learning.status)&&profileHydrated.current!==learning.identity){profileHydrated.current=learning.identity;setProfileOpen(!learningState.handled);}},[learning.status,learning.identity,learningState.handled]);
   useEffect(() => { if (initializedRef.current) headingRef.current?.focus(); else initializedRef.current = true; }, [language, path]);
-  function saveProfile(next) { let storage; try { storage = window.sessionStorage; } catch {} saveLearnerSession(storage, next); dispatch({type:"profile",profile:next});setProfile(next);setProfileOpen(false); }
-  function closeProfile() { if (!profile){let storage;try{storage=sessionStorage;}catch{}saveLearnerSession(storage,null);dispatch({type:"welcome"});}setProfileOpen(false); }
+  function saveProfile(next) { dispatch({type:"profile",profile:next});setProfileOpen(false); }
+  function closeProfile() { if (!profile) dispatch({type:"welcome"});setProfileOpen(false); }
   function chooseLanguage(next) { setScreen("browse");setLanguage(next); setPath(null); setInitialEntry(null); setExperiment(null); setResumeMode("teach"); setSession("hub"); }
   function choosePath(next, entry = null) { setScreen("browse");setResumeMode(webSessions[language] && next === "problems" ? "practice" : "teach");setPath(next); setInitialEntry(entry); setExperiment(null); setSession(next === "methods" && lessons[language] ? "learn" : "teach"); }
   function markCompleted(id) { dispatch({type:"complete",language,path,entryId:id}); }
@@ -70,10 +71,11 @@ export default function PracticeApp() {
     <header className="site-header practice-header">
       <button className="brand" aria-label={`${siteBrand.name} home`} onClick={goHome}><span className="brand-mark"><Icon name="code" size={20}/></span><span className="brand-wordmark">Code<span className="brand-bold">Forge</span> <span className="brand-lab">Lab</span><span className="brand-period">.</span></span></button>
       <nav className="language-switch" aria-label="Choose language">{Object.keys(languages).map(id=><button key={id} aria-pressed={language===id} className={language===id?"selected":""} onClick={()=>chooseLanguage(id)}><LanguageMark language={id} small/>{languages[id].name}</button>)}</nav>
-      <div className="header-actions"><button className="notebook-trigger" aria-label="Mistake notebook" title="Mistake notebook" onClick={openNotebook}><Icon name="book" size={17}/><span>Mistakes</span></button>{language && <button className="text-button paths-trigger" onClick={()=>choosePath(null)}>Practice paths</button>}<button className="ambient-toggle" aria-pressed={backgroundPaused} aria-label={backgroundPaused ? "Resume background animations" : "Pause background animations"} title={backgroundPaused ? "Resume background animations" : "Pause background animations"} onClick={()=>setBackgroundPaused(current=>!current)}><Icon name={backgroundPaused ? "play" : "pause"} size={15}/><span>{backgroundPaused ? "Resume motion" : "Pause motion"}</span></button><button className="profile-trigger" disabled={learning.status==="loading"} onClick={()=>setProfileOpen(true)} aria-label="Your profile" title="Your profile"><Icon name="user" size={18}/></button></div>
+      <div className="header-actions"><button className="notebook-trigger" aria-label="Mistake notebook" title="Mistake notebook" onClick={openNotebook}><Icon name="book" size={17}/><span>Mistakes</span></button>{language && <button className="text-button paths-trigger" onClick={()=>choosePath(null)}>Practice paths</button>}<button className="ambient-toggle" aria-pressed={backgroundPaused} aria-label={backgroundPaused ? "Resume background animations" : "Pause background animations"} title={backgroundPaused ? "Resume background animations" : "Pause background animations"} onClick={()=>setBackgroundPaused(current=>!current)}><Icon name={backgroundPaused ? "play" : "pause"} size={15}/><span>{backgroundPaused ? "Resume motion" : "Pause motion"}</span></button><button className="profile-trigger" disabled={learning.status==="loading"} onClick={()=>setProfileOpen(true)} aria-label="Your profile" title="Your profile"><Icon name="user" size={18}/></button><button className="account-trigger" disabled={account.status==="loading"} onClick={()=>setAccountOpen(true)}>{account.user?"Account":"Sign in"}</button></div>
     </header>
-    <LearnerDialog open={profileOpen} profile={profile} save={saveProfile} cancel={closeProfile} clear={()=>saveProfile(null)}/>
-    <SaveStatus status={learning.status} retry={learning.retry}/>
+    <LearnerDialog open={profileOpen&&!accountOpen} profile={profile} save={saveProfile} cancel={closeProfile} clear={()=>saveProfile(null)}/>
+    <AccountDialog open={accountOpen} account={account} close={()=>setAccountOpen(false)} editProfile={()=>setProfileOpen(true)}/>
+    <SaveStatus status={learning.status} retry={learning.retry} configured={account.configured} openAccount={()=>setAccountOpen(true)}/>
     {screen==="daily"?<DailyPractice key={language} language={language} state={learningState} dispatch={dispatch} profile={profile} onDraft={onDraft} onSessionChange={setSession} exit={webSessions[language] ? () => choosePath(null) : goHome}/>:screen==="notebook"?<MistakeNotebook state={learningState} onAnswer={onAnswer} openTopic={openTopic} exit={goHome}/>:!language ? <main className="practice-home" id="main-content">
       <LearnerBanner profile={profile} edit={()=>setProfileOpen(true)}/>
       <div className="practice-intro"><span className="eyebrow">YOUR NEXT LINE OF CODE STARTS HERE</span><h1 ref={headingRef} tabIndex={-1}>What will you practice today?</h1><p>Explore a programming language, or build and style a page in the HTML and CSS sessions.</p></div>

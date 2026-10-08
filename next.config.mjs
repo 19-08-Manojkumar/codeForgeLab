@@ -1,5 +1,5 @@
 const nextConfig = {
-  output: "export",
+  distDir: process.env.CODEFORGE_BUILD_DIR || ".next",
   trailingSlash: true,
   images: { unoptimized: true },
 };

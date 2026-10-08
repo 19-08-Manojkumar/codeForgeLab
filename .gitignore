@@ -5,3 +5,6 @@ dist/
 .sites-runtime/
 *.log
 .env*
+!.env.example
+supabase/.temp/
+supabase/.branches/

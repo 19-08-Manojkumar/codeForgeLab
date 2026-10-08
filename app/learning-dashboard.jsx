@@ -19,6 +19,9 @@ export default function LearningDashboard({state,language,openDaily,openNotebook
   </section>;
 }
 
-export function SaveStatus({status,retry}) {return <div className={`learning-save-status ${status}`} role="status">{status==="loading"?"Loading your saved learning…":status==="saving"?"Saving your learning…":status==="saved"?"Your learning is saved":<>Your latest changes are not saved yet. <button className="text-button" onClick={retry}>Retry saving</button></>}</div>;}
+export function SaveStatus({status,retry,configured,openAccount}) {
+  const guest=status==="guest"||status==="guest-unsaved";
+  return <div className={`learning-save-status ${status}`} role="status">{status==="loading"?"Loading your saved learning…":status==="saving"?"Saving your learning…":status==="saved"?"Your learning is saved to your account":guest?<>{status==="guest"?"Guest progress is saved on this device":"Guest progress stays in this tab while device storage is unavailable"}{configured&&<button className="text-button" onClick={openAccount}>Sign in to sync</button>}{status==="guest-unsaved"&&<button className="text-button" onClick={retry}>Retry saving</button>}</>:status==="account-unavailable"?<>Account sync is unavailable. <button className="text-button" onClick={retry}>Retry connection</button></>:<>Your latest changes are not saved yet. <button className="text-button" onClick={retry}>Retry saving</button></>}</div>;
+}
 
 export function TopicBookmark({item,bookmarks,toggle}) {const saved=bookmarks.some(entry=>learningKey(entry)===learningKey(item));return <button className={`topic-bookmark ${saved?"saved":""}`} aria-pressed={saved} onClick={()=>toggle(item)}><Icon name="book" size={16}/>{saved?"Bookmarked":"Bookmark topic"}</button>;}

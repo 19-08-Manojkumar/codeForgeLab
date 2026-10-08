@@ -1,26 +1,40 @@
 # CodeForge Lab
 
-A Next.js App Router practice website with a Sites Worker and D1-backed learning progress for JavaScript, Python, Java, C, HTML, and CSS. Each programming language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems. HTML and CSS have matching four-path hubs for the explorer, basics, interview preparation, and browser coding challenges. Their explorer retains ten lessons: a new first explorer followed by the original nine visual lessons.
+A Next.js App Router practice website with Supabase authentication and account-owned learning progress for JavaScript, Python, Java, C, HTML, and CSS. The browser calls Next.js API routes; PostgreSQL saves learning state with Row Level Security and atomic, idempotent updates. Guests can learn and save progress on their device. Each programming language opens a four-path hub: Methods & functions, Programming basics, Interview preparation, and Coding problems. HTML and CSS have matching four-path hubs for the explorer, basics, interview preparation, and browser coding challenges. Their explorer retains ten lessons: a new first explorer followed by the original nine visual lessons.
 
 The planned public domain is `https://codeforge-lab.vercel.app`. Shared branding covers the header, footer, welcome dialog, page title, and social metadata. After the six home course cards, Explore other areas links to [DataForge DB](https://dataforge-db.vercel.app/) for SQL/NoSQL and [Data Science Forge](https://data-science-forge.vercel.app/) for data science and analytics. These external learning cards open in a new tab. Domain provisioning and a Vercel deployment are separate from the branding update. Legacy browser-storage keys are retained so existing profiles and quiz history continue to load.
+
+## GitHub repository
+
+Use the `codeforgelab` folder as the repository root. It is a standalone project: all application code, curriculum, quizzes, assets, tests, and database migrations are inside this folder. Curriculum JSON drafts, quiz proposals, and validation output in the parent workspace are not required to build or run the app. The maintained learning content is in `lib/`.
+
+Create your GitHub repository, open a terminal inside `codeforgelab`, and push from there. Keep the existing Git history. Git automatically excludes `node_modules/`, build output, local test artifacts, and `.env.local`; include `.env.example` as the configuration template.
+
+When importing this repository into Vercel, choose Next.js and leave Root Directory as `./`, with `package.json` at the repository root. Use `npm run build` and leave Output Directory at its framework default. If you instead upload a parent repository containing a `codeforgelab` subfolder, set Root Directory to `codeforgelab`. Follow [Supabase setup](docs/supabase-setup.md) for environment variables, database tables, and authentication URLs.
 
 ## Run locally
 
 ```sh
 npm install
+npm run dev
+```
+
+For a production build:
+
+```sh
 npm run build
 npm start
 ```
 
-Open http://localhost:3000. The Next.js UI exports to `out/`; `scripts/build-worker.mjs` packages it with the learning API into `dist/server/index.js`. Production saves structured learning state in Sites D1. The local preview uses SQLite in ignored `.sites-runtime/` and a local preview identity. `npm run dev` is available for UI work, with saved-learning features requiring the built local preview. Generate schema changes with `npm run db:generate`; committed Drizzle migrations are applied by Sites before publishing.
+Open http://localhost:3000. Follow [Supabase setup](docs/supabase-setup.md) to create tables, set public environment variables, configure authentication, deploy on Vercel, and migrate existing records. Until configured, lessons use device-local guest storage. `npm run build` produces normal Next.js output with `/api/learning`, `/api/auth/session`, and confirmation/recovery routes. The existing private Sites deployment and D1 data remain separately available; its Worker/schema files are retained for migration and reference.
 
 ## Learning flow
 
-On the first learning visit, an optional welcome form asks for a name, optional age, study or work background, domain, and learning goal. A saved profile personalizes the welcome, correct-answer feedback, retry encouragement, and quiz results. The profile and welcome dismissal are saved with learning progress in D1 under the authenticated Sites learner identity. Existing session profiles are migrated on the first successful load. Skip for now dismisses the welcome without clearing an existing account profile. Use the profile icon or Edit details to update or clear the profile without resetting the active quiz. Age does not change the questions or difficulty.
+On the first learning visit, an optional welcome form asks for a name, optional age, study or work background, domain, and learning goal. A saved profile personalizes the welcome, correct-answer feedback, retry encouragement, and quiz results. The profile and welcome dismissal are saved to the Supabase account or on this device for guests. Existing session profiles are migrated on first load. Skip for now dismisses the welcome without clearing an existing account profile. Use the profile icon or Edit details to update or clear the profile without resetting the active quiz. Age does not change the questions or difficulty.
 
 Choose a language, then a practice path. Methods & functions has 25 animated, editable entries per language. Java/C animations appear in the Learn step alongside the original worked example and output predictions. Programming basics contains eight topic lessons per language. Interview preparation contains 16 questions per language, model answers, a self-review checklist, follow-up questions, and links back to the related lesson. Coding problems contains six exercises each for JavaScript/Python and eight each for Java/C, totaling 28 guided problems.
 
-Each new topic uses Teach, Learn, and Practice steps. Read the concept, trace a worked example, then predict output, explain an interview answer, or complete a missing code expression. Search and topic filters work within every path. Completed practice, bookmarks, recent quiz scores, edited method configurations, and coding drafts are saved automatically across reloads and visits. Continue learning opens the latest topic and learning step. The save status reports loading, saving, success, or an unavailable service with a retry action; pending changes stay in memory while the page remains open. Revealing a solution does not mark a problem solved. Guided expression checks preserve spaces within string literals and accept documented equivalent expressions. They do not compile or execute arbitrary programs; Java and C examples are curated references rather than installed compilers. Interview answers are self-reviewed, not automatically graded.
+Each new topic uses Teach, Learn, and Practice steps. Read the concept, trace a worked example, then predict output, explain an interview answer, or complete a missing code expression. Search and topic filters work within every path. Completed practice, bookmarks, recent quiz scores, edited method configurations, and coding drafts are saved automatically across reloads and visits. Continue learning opens the latest topic and learning step. The save status reports loading, saving, success, or an unavailable service with a retry action; pending account changes are queued on this device for retry across reloads when browser storage is available. Revealing a solution does not mark a problem solved. Guided expression checks preserve spaces within string literals and accept documented equivalent expressions. They do not compile or execute arbitrary programs; Java and C examples are curated references rather than installed compilers. Interview answers are self-reviewed, not automatically graded.
 
 All 100 method animations separate reading the current value, evaluating an operation, committing the change, and returning the result. Filter shows the actual condition, kept and skipped indices, and the growing result. Accumulators expose before/after totals, searches stop at decisive values, strings show character transformations and matching pieces, and mutators keep return values separate from changed input. C memory examples expose destination bytes, overlap-safe moves, capacity and null terminators. Backward steps, a keyboard-accessible timeline, playback speed, pause, reset, and step history use deterministic snapshots. Editing values updates the code and resets playback; invalid values stop playback and show a specific explanation. Native models use bounded inputs: Java strings use UTF-16 indexing; C text uses printable ASCII and the C locale. They do not compile arbitrary Java/C programs. Pointer and reference results are labelled rather than presented as string values. Sorting and binary-search steps explain one valid strategy rather than promising the library's internal sequence.
 
@@ -62,9 +76,11 @@ Home, practice hubs, and learning pages use colorful shooting stars and code tha
 - `app/practice-workspace.jsx`: grouped topic navigation, Teach/Learn/Practice tabs, example walkthroughs, interview self review, predictions, and guided coding exercises.
 - `app/practice.css`: responsive practice hub and learning flow styling.
 - `app/learning-dashboard.jsx`, `app/daily-practice.jsx`, `app/mistake-notebook.jsx`, and `app/learning.css`: saved-learning dashboard, daily flow, bookmark controls, and review notebook.
-- `app/use-learning-store.jsx`: serialized loading/saving, optimistic updates, explicit failure status, and retry.
+- `app/use-learning-store.jsx` and `lib/learning-store.mjs`: guest persistence, account import, optimistic updates, durable account outboxes, explicit failure status, and retry.
+- `app/use-account.jsx`, `app/account-dialog.jsx`, and `lib/supabase/`: verified sessions, email sign-up/sign-in, recovery, and sign-out.
+- `app/api/`, `server/learning-api.mjs`, `proxy.js`, and `supabase/migrations/`: Next.js API routes, session refresh, account-owned PostgreSQL state, and atomic idempotent writes.
 - `lib/learning-state.mjs` and `lib/daily-plan.mjs`: bounded learning events, spaced review dates, and daily plans.
-- `server/worker.mjs`, `db/schema.ts`, and `drizzle/`: account-owned D1 state, permanent event deduplication, atomic revision updates, and generated schema migrations.
+- `server/worker.mjs`, `db/schema.ts`, and `drizzle/`: retained legacy D1 implementation for migration/reference.
 - `app/code-atmosphere.jsx` and `app/atmosphere.css`: shared decorative coding backgrounds, language colors, card entrances, and pause/reduced-motion support.
 - `lib/curriculum/`: 32 topic lessons, 64 interview cards, 28 guided problems, and 50 Java/C references sourced from official language documentation.
 - `lib/curriculum.mjs` and `lib/practice.mjs`: curriculum navigation, language/path metadata, search, and guided expression validation.
@@ -87,20 +103,10 @@ Optional WebMCP support exposes the same validated example configuration when th
 
 ## Validation
 
-Run `npm test` for curriculum completeness, JavaScript example and exercise accuracy, guided expression handling, catalog, methods, quizzes, and learner profiles. On Windows with Microsoft Edge installed, build first and run `node scripts/ui-smoke.mjs` for the existing method/profile regression checks, then `node scripts/practice-smoke.mjs` for all four languages and paths, all 32 topic predictions, 64 interview cards, 28 guided exercises, 50 Java/C references, search, filters, keyboard tabs, progress, model answers, solutions, and all 16 language/path mobile layouts. Both use temporary local servers and hidden headless browsers and save screenshots in ignored `.sites-runtime/`.
+Run `npm test` for learning content, browser rendering semantics, profiles, guided exercises, and the backend tests. `tests/supabase.test.mjs` applies the actual SQL migration to embedded PostgreSQL and checks ownership, grants, stale revisions, permanent duplicate delivery, guest transfer, retry, account switching, redirect validation, and legacy migration.
 
-Run `node scripts/web-smoke.mjs` after building to verify the separate HTML/CSS flows, live edits and inspection, rendered-page challenges, saved drafts and resume, bookmarks, solution reveal behavior, and desktop/mobile layouts. The preview unit tests use a locally installed Edge, Chrome, or Chromium browser when available; set `METHODLAB_TEST_BROWSER` to another browser executable if needed. Browser tests skip when no compatible executable is installed.
+Run `npm run test:browser` on Windows with Microsoft Edge installed to exercise the real Next.js routes and Supabase SDK/session cookies against a local simulated Supabase HTTP service. It checks sign-up, invalid credentials, recovery, guest draft import, reload, a lost save response, account isolation, sign-out, expired links, password reset, and mobile/desktop layouts. It uses an isolated development build and hidden browser, contacts no live project or email account, and saves screenshots under ignored `.sites-runtime/`.
 
-Run `node scripts/explorer-smoke.mjs` after building to verify grouped tag selection, native h1–h6 rendering, paragraph behavior, search, CSS presets and custom values, pseudo-element inspection, saved selection and edits, explorer self-review, and mobile layouts.
+Run `npm run build` for the production Next.js build. Follow [Supabase setup](docs/supabase-setup.md) for live project/email verification and Vercel deployment.
 
-Run `node scripts/web-paths-smoke.mjs` after building to verify both four-path browser hubs, interview answers, challenge reveal protection, the five-step HTML/CSS daily flows and reloads, keyboard/touch commenting, all web paths at 390px and 360px, and commented guided code across all four programming languages. `tests/code-comments.test.mjs` checks comment round-trips, selection boundaries, line endings, quoted punctuation, and Python floor division.
-
-Run `node scripts/worker-smoke.mjs` after building to verify the packaged production Worker serves its embedded assets and persists HTML, CSS, and programming events through SQLite with account isolation. This checks the built artifact, including its curriculum dependencies.
-
-Run `node scripts/animation-smoke.mjs` after building to check all 100 animations, every Java/C method with edited values, filter phases, return/changed-state separation, playback controls, invalid input, mobile layouts, keyboard scrubbing, and reduced motion. `tests/animation.test.mjs` independently checks changed-value results, overlapping memory, truncation, early search stops, parsing, return types, and snapshots. Local Java/C compilers are not installed; their generated examples are reviewed and their teaching models tested, without claiming compiler execution.
-
-Run `node scripts/learning-smoke.mjs` after building to verify real SQLite-backed saves through the learner API, reloads, profiles, resume behavior, bookmarks, first wrong quiz attempts, scores, coding drafts, all four daily flows, and desktop/mobile notebook layouts. `tests/learning.test.mjs` checks review spacing, Unicode storage bounds, identity isolation, concurrent saves, permanent idempotency, and Worker asset handling.
-
-WebMCP registration could not be validated in a browser with native `document.modelContext` support in the current environment.
-
-Run `node scripts/atmosphere-smoke.mjs` after building to check viewport-scale meteor movement, six session themes, language palettes, theme resets, the creator link, pause/resume across navigation, reduced motion, lesson interaction, and all 16 language/path layouts at 390px and 360px widths.
+The older Worker/SQLite browser smoke scripts are retained as legacy references and require the matching legacy exported UI and Worker artifact. They are not the validation path for the new Supabase application.
