@@ -19,7 +19,13 @@ export default function useAccount() {
   useEffect(() => {
     mounted.current = true;
     if (!client) return () => { mounted.current = false; };
-    const { data } = client.auth.onAuthStateChange(() => { queueMicrotask(() => { if (mounted.current) void refresh(); }); });
+    const { data } = client.auth.onAuthStateChange(event => {
+      queueMicrotask(() => {
+        if (!mounted.current) return;
+        if (event === "SIGNED_OUT") { generation.current++; setAccount({ user: null, status: "guest" }); }
+        else void refresh();
+      });
+    });
     return () => { mounted.current = false; generation.current++; data.subscription.unsubscribe(); };
   }, [client, refresh]);
   return { ...account, configured: !!client, client, refresh };

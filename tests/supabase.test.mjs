@@ -4,6 +4,8 @@ import { readFile } from "node:fs/promises";
 import { setTimeout as pause } from "node:timers/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { createLearningApi } from "../server/learning-api.mjs";
+import { createAccountApi } from "../server/account-api.mjs";
+import { accountLearningProfile } from "../lib/account-profile.mjs";
 import { applyLearningEvent, emptyLearningState } from "../lib/learning-state.mjs";
 import { validateLearningSnapshot } from "../lib/learning-snapshot.mjs";
 import { LearningStore, GUEST_KEY } from "../lib/learning-store.mjs";
@@ -41,11 +43,16 @@ test("PostgreSQL migration enforces ownership, grants, revision checks and perma
         return { data: result.rows[0].data, error: null };
       } catch (error) { return { data: null, error }; }
     };
-    const api = createLearningApi(async () => ({ client: { rpc }, user: { id: ownerA } }));
+    const signupProfile = { name: "Learner", age: null, role: "student", domain: "Computer science", goal: "projects" };
+    const api = createLearningApi(async () => ({ client: { rpc }, user: { id: ownerA, user_metadata: { learning_profile: signupProfile } } }));
     assert.equal((await api(request())).status, 200);
+    assert.deepEqual((await rpc("get_learning_state")).data.state.profile, signupProfile);
     const bookmark = event({ type: "bookmark", ...topic, userId: ownerB });
     assert.equal((await api(request(bookmark))).status, 200);
     assert.equal((await api(request(complete()))).status, 200);
+    const practiceTime = event({ type: "practice-time", seconds: 30, day: "2026-10-12" });
+    assert.equal((await api(request(practiceTime))).status, 200);
+    assert.equal((await rpc("get_learning_state")).data.state.activity.days["2026-10-12"].seconds, 30, "Actual PostgreSQL stores the activity without another migration");
     const wrongOwner = await api(request(complete(), { "X-Learner-Account": ownerB }));
     assert.equal(wrongOwner.status, 409);
     for (let i = 0; i < 205; i++) assert.equal((await api(request(event({ type: "visit", visit: { ...topic, mode: "learn" } })))).status, 200);
@@ -55,6 +62,8 @@ test("PostgreSQL migration enforces ownership, grants, revision checks and perma
     const after = (await rpc("get_learning_state")).data;
     assert.equal(after.revision, before.revision);
     assert.equal(after.state.bookmarks.length, 1);
+    assert.equal((await api(request(practiceTime))).status, 200);
+    assert.equal((await rpc("get_learning_state")).data.state.activity.days["2026-10-12"].seconds, 30, "A timed event remains idempotent beyond the recent event history");
     const conflict = (await rpc("apply_learning_update", { p_event_id: crypto.randomUUID(), p_expected_revision: 0, p_state: emptyLearningState() })).data;
     assert.equal(conflict.status, "conflict");
     await assert.rejects(db.query("update public.learning_state set revision=0"), error => error.code === "42501");
@@ -101,6 +110,64 @@ test("API retries revision conflicts and returns a recoverable error after repea
   assert.equal((await api(request(complete()))).status, 200); assert.equal(writes, 3);
   client.rpc = async name => ({ data: name === "get_learning_state" ? { state: emptyLearningState(), revision: 1 } : { status: "conflict" } });
   assert.equal((await api(request(complete()))).status, 409);
+});
+
+test("verified signup details initialize an account once without replacing edited or cleared profiles", async () => {
+  const profile = { name: "Mira", age: null, role: "student", domain: "Computer science", goal: "projects" };
+  let state = emptyLearningState(), revision = 0, writes = 0;
+  const client = { rpc: async (name, parameters) => {
+    if (name === "get_learning_state") return { data: { state, revision } };
+    assert.equal(parameters.p_expected_revision, revision);
+    state = parameters.p_state; revision++; writes++;
+    return { data: { status: "saved", state, revision } };
+  } };
+  const api = createLearningApi(async () => ({ client, user: { id: ownerA, user_metadata: { learning_profile: { ...profile, name: "  Mira  ", password: "ignored", userId: ownerB, admin: true } } } }));
+  assert.deepEqual((await (await api(request())).json()).state.profile, profile);
+  assert.equal(state.handled, true);
+  assert.equal(writes, 1);
+  await api(request()); assert.equal(writes, 1, "Reloading does not overwrite the profile");
+  await api(request(event({ type: "profile", profile: { ...profile, name: "Mira Updated" } })));
+  assert.equal((await (await api(request())).json()).state.profile.name, "Mira Updated");
+  await api(request(event({ type: "profile", profile: null })));
+  assert.equal((await (await api(request())).json()).state.profile, null);
+  assert.equal(writes, 3, "Intentional profile removal is retained");
+});
+
+test("account API returns verified signup fields when learning storage is unavailable", async () => {
+  const profile = { name: "Mira", age: 24, role: "student", domain: "Computer science", goal: "projects" };
+  const user = { id: ownerA, email: "mira@example.test", user_metadata: { learning_profile: { ...profile, name: "  Mira  ", password: "never-return", admin: true }, unrelated: "never-return" } };
+  const identity = async () => ({ user, client: { rpc: async () => ({ error: { code: "PGRST202" } }) } });
+  assert.equal((await createLearningApi(identity)(request())).status, 503);
+  const response = await createAccountApi(identity)();
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+  const account = (await response.json()).user;
+  assert.deepEqual(account, { id: ownerA, email: user.email, signupProfile: profile });
+  assert.deepEqual(accountLearningProfile(account, emptyLearningState()), profile);
+  assert.equal(accountLearningProfile(null, { ...emptyLearningState(), profile }), null);
+  const edited = applyLearningEvent(emptyLearningState(), event({ type: "profile", profile: { ...profile, name: "Edited" } }));
+  assert.equal(accountLearningProfile(account, edited).name, "Edited");
+  const cleared = applyLearningEvent(edited, event({ type: "profile", profile: null }));
+  assert.equal(accountLearningProfile(account, cleared), null, "Signup fallback must not restore a cleared profile");
+  assert.deepEqual(await (await createAccountApi(async () => ({ user: null }))()).json(), { user: null });
+  const invalid = { ...user, user_metadata: { learning_profile: { ...profile, role: "admin" } } };
+  assert.equal((await (await createAccountApi(async () => ({ user: invalid }))()).json()).user.signupProfile, null);
+  assert.equal((await createAccountApi(async () => ({ unavailable: true }))()).status, 503);
+});
+
+test("invalid signup metadata is ignored and simultaneous profile edits take precedence", async () => {
+  const profile = { name: "Learner", age: null, role: "student", domain: "Computer science", goal: "basics" };
+  let state = emptyLearningState(), writes = 0;
+  const client = { rpc: async name => {
+    if (name === "get_learning_state") return { data: { state, revision: writes } };
+    writes++;
+    state = applyLearningEvent(state, event({ type: "profile", profile: { ...profile, name: "Concurrent edit" } }));
+    return { data: { status: "conflict" } };
+  } };
+  const invalid = createLearningApi(async () => ({ client, user: { id: ownerA, user_metadata: { learning_profile: { ...profile, role: "admin" } } } }));
+  assert.equal((await (await invalid(request())).json()).state.profile, null); assert.equal(writes, 0);
+  const valid = createLearningApi(async () => ({ client, user: { id: ownerA, user_metadata: { learning_profile: profile } } }));
+  assert.equal((await (await valid(request())).json()).state.profile.name, "Concurrent edit"); assert.equal(writes, 1);
 });
 
 test("guest import combines progress while preserving existing account profile and newer drafts", () => {

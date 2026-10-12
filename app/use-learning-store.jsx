@@ -16,7 +16,11 @@ export default function useLearningStore(account) {
     if (owner) void controller.load();
     return () => { controller.destroy(); if (store.current === controller) store.current = null; };
   }, [owner, ready, transport]);
-  const dispatch = useCallback(data => store.current?.dispatch(data), []);
+  const dispatch = useCallback((data, expectedIdentity) => {
+    const current = store.current;
+    if (expectedIdentity && expectedIdentity !== (current?.owner || "guest")) return;
+    current?.dispatch(data);
+  }, []);
   const retry = useCallback(() => { if (account.status === "unavailable") void account.refresh(); else void store.current?.retry(); }, [account.status, account.refresh]);
   const visible=snapshot.identity===(owner||"guest")?snapshot:{state:emptyLearningState(),status:"loading",identity:owner||"guest"};
   return { ...visible, status: account.status === "unavailable" ? "account-unavailable" : visible.status, dispatch, retry };

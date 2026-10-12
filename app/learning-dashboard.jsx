@@ -5,10 +5,15 @@ import { languages } from "../lib/practice.mjs";
 import { dueMistakes, learningKey, localDay } from "../lib/learning-state.mjs";
 import { dailyPlan } from "../lib/daily-plan.mjs";
 
-export default function LearningDashboard({state,language,openDaily,openNotebook,openTopic,loading=false}) {
+export default function LearningDashboard({state,language,openDaily,openNotebook,openTopic,loading=false,compact=false}) {
   const [preferred,setPreferred]=useState(languages[state.lastVisited?.language]?state.lastVisited.language:"javascript"),selected=languages[language]?language:preferred;
   const plan=dailyPlan(selected),markers=state.daily[plan.key]?.completed||[],due=dueMistakes(state),completed=Object.values(state.completed).reduce((sum,list)=>sum+list.length,0);
   const last=state.lastVisited;
+  if(compact)return <nav className="home-quick-actions" aria-label="Practice shortcuts">
+    {last&&<button className="home-shortcut-button" aria-label="Continue learning" disabled={loading} onClick={()=>openTopic(last)}><span className="home-shortcut-icon"><Icon name="play" size={16}/></span><span className="home-shortcut-copy"><strong>Continue learning</strong><small>{last.title}</small></span><Icon name="chevron" size={15}/></button>}
+    <button className="home-shortcut-button" onClick={openNotebook}><span className="home-shortcut-icon notebook"><Icon name="book" size={17}/></span><span className="home-shortcut-copy"><strong>Mistake notebook</strong><small>{due.length?`${due.length} questions ready to review`:"Review your learning mistakes"}</small></span>{due.length>0&&<span className="home-shortcut-count">{due.length}</span>}<Icon name="chevron" size={15}/></button>
+    {state.bookmarks.length>0&&<details className="home-bookmarks"><summary><span className="home-shortcut-icon saved"><Icon name="book" size={17}/></span><span className="home-shortcut-copy"><strong>Bookmarked topics</strong><small>Return to a saved lesson</small></span><span className="home-shortcut-count">{state.bookmarks.length}</span><Icon className="home-bookmark-chevron" name="chevron" size={15}/></summary><div className="home-bookmark-popover"><div className="home-bookmark-heading"><strong>Your saved topics</strong><span>{state.bookmarks.length} {state.bookmarks.length===1?"topic":"topics"}</span></div><div className="home-bookmark-list">{state.bookmarks.slice().reverse().map(item=><button key={learningKey(item)} onClick={()=>openTopic({...item,mode:"learn"})}><span className={`home-bookmark-language ${item.language}`}>{languages[item.language].mark}</span><span className="home-bookmark-topic"><strong>{item.title}</strong><small>{languages[item.language].name} · Open lesson</small></span><Icon name="chevron" size={14}/></button>)}</div></div></details>}
+  </nav>;
   return <section className="learning-dashboard" aria-label="Your practice dashboard">
     <div className="dashboard-stats"><span><strong>{completed}</strong> {completed===1?"topic":"topics"} practiced</span><span><strong>{state.stats.attempts}</strong> answers checked</span><span><strong>{state.stats.attempts?Math.round(state.stats.correct/state.stats.attempts*100):0}%</strong> answer accuracy</span></div>
     <div className="dashboard-cards">
@@ -19,9 +24,9 @@ export default function LearningDashboard({state,language,openDaily,openNotebook
   </section>;
 }
 
-export function SaveStatus({status,retry,configured,openAccount}) {
+export function SaveStatus({status,retry,configured}) {
   const guest=status==="guest"||status==="guest-unsaved";
-  return <div className={`learning-save-status ${status}`} role="status">{status==="loading"?"Loading your saved learning…":status==="saving"?"Saving your learning…":status==="saved"?"Your learning is saved to your account":guest?<>{status==="guest"?"Guest progress is saved on this device":"Guest progress stays in this tab while device storage is unavailable"}{configured&&<button className="text-button" onClick={openAccount}>Sign in to sync</button>}{status==="guest-unsaved"&&<button className="text-button" onClick={retry}>Retry saving</button>}</>:status==="account-unavailable"?<>Account sync is unavailable. <button className="text-button" onClick={retry}>Retry connection</button></>:<>Your latest changes are not saved yet. <button className="text-button" onClick={retry}>Retry saving</button></>}</div>;
+  return <div className={`learning-save-status ${status}`} role="status" hidden={["saved","saving","guest"].includes(status)}>{status==="loading"?"Loading your saved learning…":["saved","saving","guest"].includes(status)?null:guest?<>Guest progress stays in this tab while device storage is unavailable. <button className="text-button" onClick={retry}>Retry saving</button></>:status==="account-unavailable"?<>Account sync is unavailable. <button className="text-button" onClick={retry}>Retry connection</button></>:<>Your latest changes are not saved yet. <button className="text-button" onClick={retry}>Retry saving</button></>}</div>;
 }
 
 export function TopicBookmark({item,bookmarks,toggle}) {const saved=bookmarks.some(entry=>learningKey(entry)===learningKey(item));return <button className={`topic-bookmark ${saved?"saved":""}`} aria-pressed={saved} onClick={()=>toggle(item)}><Icon name="book" size={16}/>{saved?"Bookmarked":"Bookmark topic"}</button>;}

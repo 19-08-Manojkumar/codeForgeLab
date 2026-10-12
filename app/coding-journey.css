@@ -1,0 +1,120 @@
+.coding-journey{margin:28px 0 32px;border:1px solid #dfe5f1;border-radius:20px;background:white;overflow:hidden;box-shadow:0 8px 28px #213c6e05}
+.journey-loading{padding:40px;color:var(--muted);font-size:14px}
+.journey-momentum{display:flex;align-items:center;justify-content:space-between;gap:26px;padding:25px 27px;background:linear-gradient(115deg,#fffaf0,#f8faff 65%);border-bottom:1px solid #e5e9f3}
+.journey-streak{display:flex;align-items:center;gap:17px;flex:1;min-width:0}
+.journey-flame{display:grid;place-items:center;width:64px;height:70px;border-radius:20px;background:#fff0d6;color:#c37d22;border:1px solid #f5deae;flex-shrink:0}
+.journey-streak-number{display:flex;align-items:baseline;gap:10px;line-height:1}
+.journey-streak-number strong{font-size:43px;letter-spacing:-2px;font-weight:650;color:#283654;font-variant-numeric:tabular-nums}
+.journey-streak-number>span{font-size:17px;font-weight:500;color:#52617b}
+.journey-streak p{font-size:12px;color:#78829a;line-height:1.65;margin:9px 0 0;max-width:32ch}
+.journey-week-heading{display:block;color:#818ba0;font-size:9px;letter-spacing:1px;font-weight:600;text-align:center;margin-bottom:10px}
+.journey-week>div{display:flex;gap:7px}
+.journey-week-day{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:10px;color:#8992a5}
+.journey-week-day>i{display:grid;place-items:center;width:29px;height:29px;border:1px solid #e4e8f0;background:white;border-radius:50%;font-style:normal;font-size:14px;color:#b46b77}
+.journey-week-day.active>i{background:var(--blue);color:white;border-color:var(--blue)}
+.journey-week-day.today>i{border-color:#d29b43;background:#fff4dd}
+.journey-week-day.future>i{opacity:.45}
+.journey-today-dot{width:6px;height:6px;border-radius:50%;background:#c7882e}
+.journey-start{white-space:nowrap;gap:9px;min-height:44px;border-radius:10px;font-size:13px;padding:12px 15px}
+.journey-metrics{display:flex;align-items:center;gap:22px;padding:14px 27px;border-bottom:1px solid var(--border);font-size:12px;color:#7a859b;flex-wrap:wrap}
+.journey-metrics>span{display:flex;align-items:center;gap:6px}
+.journey-metrics svg{color:#7f90b3}
+.journey-metrics strong{font-weight:600;color:#435372}
+.journey-metrics small{margin-left:auto;font-size:10px;color:#929aaa}
+.journey-return-note{display:flex;align-items:flex-start;gap:8px;padding:12px 27px;margin:0;border-bottom:1px solid #eee5dd;background:#fffaf4;color:#9c8770;font-size:12px;line-height:1.7}
+.journey-return-note svg{flex-shrink:0;margin-top:3px;color:#bc9a67}
+.journey-return-note strong{font-weight:500;color:#8d7254}
+.journey-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.journey-calendar,.journey-trophies{padding:25px 27px;min-width:0}
+.journey-calendar{border-right:1px solid var(--border)}
+.journey-section-title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:20px}
+.journey-section-title .eyebrow{font-size:9px;letter-spacing:1px;color:#8b95a9;margin-bottom:5px}
+.journey-section-title h3{font-size:17px;font-weight:600;letter-spacing:-.4px;margin:0;color:#33425e}
+.journey-days-count{white-space:nowrap;color:#8a94a8;font-size:10px;padding:4px 7px;border:1px solid #e9ecf2;background:#fafbfd;border-radius:6px}
+.journey-month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:12px;color:#62718e}
+.journey-month-nav>div{display:flex;gap:5px}
+.journey-month-nav button{display:grid;place-items:center;width:30px;height:30px;border:1px solid #e9edf4;border-radius:7px;background:white;color:#7888a5}
+.journey-month-nav button:hover:not(:disabled){background:var(--blue-light);color:var(--blue)}
+.journey-week-labels,.journey-month-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.journey-week-labels{margin-bottom:7px;font-size:10px;color:#919bad;text-align:center}
+.journey-month-days>span,.journey-day{height:36px;min-width:0}
+.journey-day{position:relative;border:1px solid transparent;border-radius:8px;background:#f8f9fc;font-size:11px;color:#99a3b6;font-variant-numeric:tabular-nums}
+.journey-day.active{background:#eef2ff;color:#4561c3;border-color:#dbe3ff}
+.journey-day.missed{background:#fff7f5;color:#a77d77;border-color:#f1e7e4}
+.journey-day.today{background:#fffaee;color:#b38533;border-color:#edd6a7}
+.journey-day.is-today:after{content:"";position:absolute;inset:3px;border:1px solid currentColor;border-radius:5px;opacity:.4;pointer-events:none}
+.journey-day[aria-pressed=true]{outline:2px solid #6e87eb;outline-offset:1px}
+.journey-day:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.journey-day.future{opacity:.42;background:#fafbfd}
+.journey-day-dot{position:absolute;bottom:4px;left:calc(50% - 1.5px);width:3px;height:3px;border-radius:50%;background:#526bd2}
+.journey-missed-mark{position:absolute;bottom:0;left:calc(50% - 3px);font-size:9px;color:#d4a7a0}
+.journey-day-detail{display:flex;flex-direction:column;gap:3px;background:#f7f9fd;border-radius:9px;padding:11px 13px;margin-top:16px;font-size:11px;line-height:1.65;color:#818ca2;min-height:60px}
+.journey-day-detail strong{color:#596985;font-weight:600;font-size:11px}
+.journey-day-detail.active{background:#f1f5ff;color:#657aa8}
+.journey-day-detail.missed{background:#fff8f6;color:#a28a81}
+.journey-calendar-legend{display:flex;align-items:center;gap:15px;margin-top:13px;font-size:10px;color:#8e98ac;flex-wrap:wrap}
+.journey-calendar-legend>span{display:inline-flex;align-items:center;gap:5px}
+.journey-calendar-legend i{display:inline-block;width:7px;height:7px;border-radius:2px;border:1px solid #dce4f7}
+.journey-calendar-legend i.active{background:#7890df}
+.journey-calendar-legend i.missed{background:#f0dcd5;border-color:#edddd7}
+.journey-calendar-legend i.today{background:#fae9c1;border-color:#dcc7a0}
+.journey-trophy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px 9px}
+.journey-trophy{min-width:0;display:flex;align-items:center;flex-direction:column;text-align:center;gap:5px;padding:12px 5px;border:1px solid #edf0f5;border-radius:11px;background:#fafbfd;color:#8b96a8}
+.journey-trophy-medal{display:grid;place-items:center;position:relative;width:40px;height:40px;border-radius:50%;background:#f0f2f7;color:#a5adbd;margin-bottom:2px}
+.journey-trophy strong{font-size:12px;font-weight:600;line-height:1.5;color:#798599}
+.journey-trophy>span:not(.journey-trophy-medal){font-size:11px;line-height:1.5;color:#8995aa;max-width:16ch}
+.journey-trophy small{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:#8b96aa}
+.journey-trophy-lock{position:absolute;bottom:0;right:-2px;display:grid;place-items:center;width:16px;height:16px;border:2px solid white;border-radius:50%;background:#dce1ec;color:#7c8aa1}
+.journey-trophy.earned{background:#fffdf8;border-color:#eadcbe}
+.journey-trophy.earned strong{color:#7d653b}
+.journey-trophy.earned small{color:#a1844e}
+.journey-trophy.earned>span:not(.journey-trophy-medal){color:#9c8b6a}
+.journey-trophy.bronze .journey-trophy-medal{background:#f5e6d8;color:#b27a4e}
+.journey-trophy.silver{background:#fafcff;border-color:#dbe2ee}
+.journey-trophy.silver .journey-trophy-medal{background:#eaf0f8;color:#7488ad}
+.journey-trophy.gold .journey-trophy-medal{background:#fff0c5;color:#bb8b21;box-shadow:0 0 0 3px #fff9e6}
+.journey-trophy.platinum .journey-trophy-medal{background:#e9e5fc;color:#8b70c2;box-shadow:0 0 0 3px #f4f0fd}
+.journey-next-trophy{margin-top:18px}
+.journey-next-trophy>div{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:10px;color:#929db0;line-height:1.6;margin-bottom:8px}
+.journey-next-trophy strong{color:#677899;font-weight:500}
+.journey-next-trophy progress{display:block;width:100%;height:5px;border:none;border-radius:5px;overflow:hidden;background:#eef1f7;accent-color:var(--blue)}
+.journey-next-trophy progress::-webkit-progress-bar{background:#eef1f7;border-radius:5px}
+.journey-next-trophy progress::-webkit-progress-value{background:#7388d8;border-radius:5px}
+.journey-reward-note{font-size:10px;color:#96a0b0;line-height:1.7;margin:12px 0 0}
+.journey-rules{display:flex;align-items:flex-start;gap:7px;padding:13px 27px;border-top:1px solid var(--border);font-size:11px;color:#8e98aa;background:#fcfdff;line-height:1.7;margin:0}
+.journey-rules svg{flex-shrink:0;margin-top:2px;color:#aab7d4}
+.account-coding-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:19px 0 0;text-align:center}
+.account-coding-stats>span{display:flex;flex-direction:column;gap:4px;font-size:10px;color:#919bae}
+.account-coding-stats strong{font-size:18px;color:#536588;font-weight:600;line-height:1.2;letter-spacing:-.4px}
+.account-avatar{position:relative}
+.account-avatar-trophy{position:absolute;bottom:-4px;right:-5px;display:grid;place-items:center;width:23px;height:23px;background:#fff1c7;color:#b18630;border:2px solid white;border-radius:50%;box-shadow:0 2px 5px #ad84392b}
+.account-avatar.reward-bronze{border-color:#f3e3d0;box-shadow:0 0 0 2px #d7b38e}
+.account-avatar.reward-silver{border-color:#edf2fc;box-shadow:0 0 0 2px #a8b8d5}
+.account-avatar.reward-gold{border-color:#fff1cc;box-shadow:0 0 0 2px #e3be61;animation:profile-trophy-glow 4s ease-in-out infinite}
+.account-avatar.reward-platinum{border-color:#ece4fc;box-shadow:0 0 0 2px #b69add;animation:profile-trophy-glow 4s ease-in-out infinite}
+.journey-trophies.compact{margin-top:23px;padding:20px 0 0;border-top:1px solid var(--border)}
+.journey-trophies.compact .journey-section-title{margin-bottom:13px;align-items:center}
+.journey-trophies.compact h3{font-size:13px}
+.journey-trophies.compact .journey-trophy-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.journey-trophies.compact .journey-trophy{padding:9px 4px;gap:3px}
+.journey-trophies.compact .journey-trophy-medal{width:31px;height:31px}
+.journey-trophies.compact .journey-trophy strong{font-size:11px}
+.journey-trophies.compact .journey-trophy small{font-size:8px}
+.journey-celebration{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:1001;display:flex;align-items:center;gap:15px;width:max-content;max-width:calc(100vw - 28px);padding:19px 42px 19px 19px;border:1px solid #e6d7b1;border-radius:16px;background:#fffefa;box-shadow:0 10px 40px #38466730;color:#826535;animation:journey-toast-in .35s ease-out both;isolation:isolate}
+.journey-celebration-icon{display:grid;place-items:center;width:54px;height:54px;flex-shrink:0;border-radius:16px;background:#faebc7;color:#b98828}
+.journey-celebration .eyebrow{font-size:9px;letter-spacing:1px;color:#b2945c}
+.journey-celebration strong{display:block;font-size:19px;letter-spacing:-.4px;color:#74603c;margin:3px 0}
+.journey-celebration p{font-size:12px;color:#9a8c75;line-height:1.65;max-width:42ch}
+.journey-celebration>button{position:absolute;top:8px;right:8px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#a99c84}
+.journey-celebration>button:hover{background:#f4ecdf}
+.journey-confetti{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden;border-radius:16px}
+.journey-confetti i{position:absolute;left:25%;top:50%;width:5px;height:8px;background:#dfb96d;border-radius:1px;opacity:0;animation:journey-spark 1s var(--spark-delay) ease-out forwards}
+.journey-confetti i:nth-child(2n){background:#b2c3f4}
+@keyframes journey-spark{0%{opacity:0;transform:rotate(var(--spark-angle)) translateY(0)}20%{opacity:.8}100%{opacity:0;transform:rotate(var(--spark-angle)) translateY(-100px) rotate(80deg)}}
+@keyframes journey-toast-in{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
+@keyframes profile-trophy-glow{50%{filter:drop-shadow(0 0 7px #d6b75d60)}}
+.motion-paused .journey-confetti i,.journey-celebration.motion-paused,.motion-paused .account-avatar{animation-play-state:paused!important}
+@media(max-width:1000px){.journey-momentum{gap:18px}.journey-week>div{gap:4px}.journey-week-day>i{width:25px;height:25px}.journey-streak-number strong{font-size:37px}.journey-flame{width:55px;height:63px}.journey-streak p{max-width:26ch}.journey-calendar,.journey-trophies{padding:22px}.journey-metrics{gap:12px 18px}.journey-metrics small{margin-left:0}}
+@media(max-width:760px){.journey-momentum{flex-wrap:wrap;padding:23px}.journey-streak{flex-basis:calc(100% - 200px)}.journey-start{width:100%;justify-content:center}.journey-grid{grid-template-columns:minmax(0,1fr)}.journey-calendar{border-right:0;border-bottom:1px solid var(--border)}.journey-metrics{padding:14px 23px;gap:12px 18px}.journey-metrics small{flex-basis:100%}.journey-trophy-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.journey-trophy{padding:12px 6px}.journey-trophy strong{font-size:11px}.journey-trophy>span:not(.journey-trophy-medal){font-size:10px}.journey-rules{padding:13px 23px}.journey-section-title h3{font-size:18px}.journey-day{height:41px}.journey-calendar-legend{font-size:11px}}
+@media(max-width:490px){.coding-journey{border-radius:16px;margin:24px 0}.journey-momentum{gap:20px;padding:21px 18px}.journey-streak{flex-basis:100%;gap:14px}.journey-flame{width:52px;height:60px;border-radius:16px}.journey-streak-number strong{font-size:39px}.journey-streak p{max-width:none;font-size:12px}.journey-week{width:100%}.journey-week-heading{text-align:left;margin-bottom:12px}.journey-week>div{justify-content:space-between;gap:6px}.journey-week-day>i{width:31px;height:31px}.journey-start{margin-top:-2px}.journey-metrics{padding:14px 18px;font-size:11px;gap:12px 16px}.journey-metrics>span:last-of-type{flex-basis:100%}.journey-calendar,.journey-trophies{padding:22px 18px}.journey-section-title h3{font-size:16px}.journey-section-title .eyebrow{font-size:8px}.journey-week-labels,.journey-month-days{gap:5px}.journey-day{height:36px}.journey-trophy-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.journey-trophy strong{font-size:10px}.journey-trophy>span:not(.journey-trophy-medal){font-size:9px}.journey-rules{padding:13px 18px;font-size:10px}.journey-celebration{gap:11px;padding:16px 33px 16px 14px;bottom:15px}.journey-celebration-icon{width:43px;height:46px;border-radius:13px}.journey-celebration strong{font-size:17px}.journey-celebration p{font-size:11px}.account-coding-stats strong{font-size:16px}.journey-trophies.compact .journey-trophy-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.journey-trophies.compact .journey-trophy strong{font-size:10px}.journey-trophies.compact .journey-trophy small{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.account-avatar,.journey-celebration,.journey-confetti i{animation:none!important}.journey-confetti{display:none}}

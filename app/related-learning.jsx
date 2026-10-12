@@ -23,7 +23,8 @@ function LearningMark({ database }) {
   return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{database ? <><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/></> : <><path d="M3 3v18h18M7 16v-4M12 16V8M17 16V5"/><path d="m6 9 5-5 5 2 5-4"/></>}</svg>;
 }
 
-export default function RelatedLearning() {
+export default function RelatedLearning({ compact = false }) {
+  if(compact)return <section className="home-related" aria-labelledby="home-related-title"><div className="home-section-heading"><h2 id="home-related-title">Other areas to learn</h2><span>Separate learning projects</span></div><div className="home-related-sessions" aria-label="Other areas to learn">{learningSites.map(site=><a key={site.id} className={`home-related-link ${site.id}`} href={site.href} target="_blank" rel="noopener noreferrer"><span className="related-learning-mark"><LearningMark database={site.id==="databases"}/></span><div><strong>{site.id==="databases"?"SQL & NoSQL":"Data science & analytics"}</strong><span>{site.name}</span></div><span className="home-external-arrow" aria-hidden="true">↗</span><span className="sr-only">Opens in a new tab.</span></a>)}</div></section>;
   return <section className="related-learning" aria-labelledby="related-learning-heading">
     <div className="related-learning-heading"><span className="eyebrow">KEEP LEARNING</span><h2 id="related-learning-heading">Explore other areas</h2><p>Continue your learning on our database and data websites.</p></div>
     <div className="related-learning-grid">{learningSites.map(site => <a key={site.id} className={`related-learning-card ${site.id}`} href={site.href} target="_blank" rel="noopener noreferrer">
