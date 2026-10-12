@@ -8,6 +8,7 @@ import "./related-learning.css";
 import "./auth.css";
 import "./coding-journey.css";
 import "./home-overview.css";
+import "./web-design.css";
 import { siteBrand } from "../lib/site.mjs";
 
 export const metadata = {

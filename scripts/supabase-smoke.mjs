@@ -8,6 +8,7 @@ import { resolve, join } from "node:path";
 import assert from "node:assert/strict";
 import { emptyLearningState, localDay, applyLearningEvent } from "../lib/learning-state.mjs";
 import { shiftActivityDay, codingSummary } from "../lib/coding-activity.mjs";
+import { checkWebDesign } from "./web-design-browser-checks.mjs";
 
 const accounts = [
   { id: "11111111-1111-4111-8111-111111111111", email: "first@example.test" },
@@ -331,6 +332,7 @@ try {
   await call("Emulation.setEmulatedMedia", { features:[{name:"prefers-reduced-motion",value:"no-preference"}] });
   await screenshot("compact-home-live-flame.png");
   await signOut();
+  await checkWebDesign({states,accounts,signIn,signOut,saved,evaluate,wait,click,field,call,screenshot});
   await call("Emulation.setDeviceMetricsOverride", { width:360,height:900,deviceScaleFactor:1,mobile:true });
   await call("Page.navigate", { url: base + "/auth/confirm?token_hash=expired&type=recovery" }); await wait("location.pathname.includes('/auth/error')");
   assert.equal(await evaluate("document.documentElement.scrollWidth<=innerWidth && Boolean(document.querySelector('.auth-card h1'))"), true); await screenshot("auth-expired-link-mobile.png");
@@ -346,4 +348,4 @@ finally {
   socket?.close(); backend.closeAllConnections(); backend.close();
   await stopProcess(browser); await stopProcess(next);
 }
-console.log(JSON.stringify({ passed: true, checks: ["real Next.js API routes and Supabase session cookies", "single Login/Profile control with no automatic guest dialog", "signup from Login, profile validation and matching passwords", "sign-up confirmation, invalid sign-in, password recovery forms", "profile completion, edit cancellation, validation, saving and clearing in one dialog", "device draft import and reload", "lost response retry", "account isolation, logout and restored focus", "signup profile, updated name, draft and bookmark restored with fresh browser storage", "expired links and token-hash password reset", "360/390/1100/1440px signup, sign-in and profile layouts", "no browser exceptions"], backend: "local simulated Supabase service; no live credentials or emails used" }));
+console.log(JSON.stringify({ passed: true, checks: ["real Next.js API routes and Supabase session cookies", "single Login/Profile control with no automatic guest dialog", "signup from Login, profile validation and matching passwords", "sign-up confirmation, invalid sign-in, password recovery forms", "profile completion, edit cancellation, validation, saving and clearing in one dialog", "device draft import and reload", "lost response retry", "account isolation, logout and restored focus", "signup profile, updated name, draft and bookmark restored with fresh browser storage", "Web Design: four levels, 15 challenges each, blank editors, rendered grading and JavaScript interactions", "Web Design: account draft resume, assisted answer tracking, varied target/order and account isolation", "expired links and token-hash password reset", "360/390/1100/1440px signup, sign-in and profile layouts", "no browser exceptions"], backend: "local simulated Supabase service; no live credentials or emails used" }));

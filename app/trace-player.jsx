@@ -1,6 +1,7 @@
 "use client";
 
 import { animationFormat } from "../lib/animation.mjs";
+import { scrollToTop } from "./use-scroll-to-top";
 
 function Values({ values, active = [], processed = [], accepted = [], rejected = [], language, label, className = "", window, stage }) {
   return <div className={`trace-values ${className}`} aria-label={label}>{values.length ? values.map((value, index) => {
@@ -18,7 +19,7 @@ export default function TracePlayer({ lesson, trace, step, setStep, playing, set
   const resultLabel = mutation || lesson.id === "forEach" || mode === "output" ? "Return value" : "Result so far";
   const working = frame.working || trace.initialWorking || (Array.isArray(trace.input) ? trace.input : typeof trace.input === "string" ? trace.input.split("") : []);
   const isCommit = frame.stage === "commit", currentRecords = frame.records || [];
-  function move(next) { setPlaying(false); setStep(Math.min(total, Math.max(0, next))); }
+  function move(next) { scrollToTop(); setPlaying(false); setStep(Math.min(total, Math.max(0, next))); }
   return <section className={`visual-card trace-player trace-mode-${mode}`} id="playground" aria-label="Step-by-step visualization" data-animation-mode={mode} data-stage={frame.stage}>
     <div className="visual-heading"><div><span className="eyebrow">SEE IT HAPPEN</span><h3>{mode === "filter" ? "One item. One decision." : mode === "accumulate" ? "Carry the result forward" : mode === "memory" ? "Follow the bytes" : mode === "sort" ? "Watch the order change" : mode === "search" ? "Follow the search" : mode === "lookup" ? "Look up the value" : "Follow the operation"}</h3></div><span className={`step-count ${done ? "complete" : ""}`}>{done ? "Complete" : `Step ${step} of ${total}`}</span></div>
     <div className="trace-phase-strip" aria-label="Operation stages">{trace.phases.map((phase, index) => <span key={phase} className={frame.phase === index ? "current" : frame.phase > index ? "past" : ""}><b>{index + 1}</b>{phase}</span>)}</div>

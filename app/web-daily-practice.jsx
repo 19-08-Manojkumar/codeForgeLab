@@ -5,11 +5,13 @@ import { WebLesson } from "./web-workspace";
 import { dailyPlan } from "../lib/daily-plan.mjs";
 import { learningKey, localDay } from "../lib/learning-state.mjs";
 import { languages } from "../lib/practice.mjs";
+import useScrollToTop from "./use-scroll-to-top";
 
 export default function WebDailyPractice({ language, state, dispatch, profile, onSessionChange, onDraft, exit }) {
   const [date] = useState(localDay), plan = dailyPlan(language, date);
   const markers = ["concept", "prediction-0", "prediction-1", "prediction-2", "problem"], completed = state.daily[plan.key]?.completed || [];
   const first = markers.findIndex(marker => !completed.includes(marker)), [step, setStep] = useState(first < 0 ? 5 : first);
+  useScrollToTop(step);
   const entry = step === 0 ? plan.concept : step < 4 ? plan.predictions[step - 1] : plan.problem;
   const path = step < 4 ? "basics" : "problems", draftEntryId = `daily-${date}-${entry.id}`;
   const finish = marker => dispatch({ type: "daily", date, language, marker });

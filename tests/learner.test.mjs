@@ -96,6 +96,8 @@ test("motivation follows the learner's name, role and goal and is independent of
     messages.add(message);
   }
   assert.equal(messages.size, 5);
+  assert.match(learnerGoalMessage({ ...example, goal: "work" }), /real-world coding skills.*Keep practicing/u);
+  assert.doesNotMatch(learnerGoalMessage({ ...example, goal: "work" }), /code you want to use at work/u);
   const feedback = [0, 1, 2, 3].map(index => correctFeedback(example, index));
   assert.equal(new Set(feedback).size, 4);
   assert.ok(feedback.every(message => message.includes("Manoj")));

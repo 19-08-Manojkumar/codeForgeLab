@@ -6,6 +6,7 @@ import { dailyPlan } from "../lib/daily-plan.mjs";
 import { localDay } from "../lib/learning-state.mjs";
 import { languages } from "../lib/practice.mjs";
 import WebDailyPractice from "./web-daily-practice";
+import useScrollToTop from "./use-scroll-to-top";
 
 export default function DailyPractice({language,state,dispatch,profile,onSessionChange,onDraft,exit}) {
   if (language === "html" || language === "css") return <WebDailyPractice {...{language,state,dispatch,profile,onSessionChange,onDraft,exit}}/>;
@@ -16,6 +17,7 @@ function ProgrammingDailyPractice({language,state,dispatch,profile,onSessionChan
   const [date]=useState(localDay),plan=dailyPlan(language,date),completed=state.daily[plan.key]?.completed||[];
   const names=["concept","prediction-0","prediction-1","prediction-2","problem"],first=names.findIndex(marker=>!completed.includes(marker));
   const [step,setStep]=useState(first<0?5:first);
+  useScrollToTop(step);
   useEffect(()=>{onSessionChange(step===0?"teach":step<4?"test":"practice");},[step,onSessionChange]);
   const finish=marker=>dispatch({type:"daily",date,language,marker});
   const onAnswer=answer=>dispatch({type:"answer",answer});

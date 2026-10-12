@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MethodsWorkspace, { Icon } from "./method-workspace";
 import PracticeWorkspace from "./practice-workspace";
 import WebWorkspace from "./web-workspace";
+import WebDesignSession, { DesignLevelCards, DesignSessionLink } from "./web-design-session";
 import CodeAtmosphere from "./code-atmosphere";
 import useLearningStore from "./use-learning-store";
 import useAccount from "./use-account";
@@ -25,6 +26,7 @@ import { webSessions } from "../lib/web-lessons.mjs";
 import { getWebPracticeEntries, webPracticePaths } from "../lib/web-practice.mjs";
 import RelatedLearning from "./related-learning";
 import { siteBrand } from "../lib/site.mjs";
+import useScrollToTop from "./use-scroll-to-top";
 
 function LanguageMark({ language, small = false }) { return <span className={`language-mark ${language} ${small ? "small" : ""}`} aria-hidden="true">{languages[language].mark}</span>; }
 const methodCount = language => lessons[language]?.length || curricula[language].references.length;
@@ -38,18 +40,18 @@ export default function PracticeApp() {
   const account=useAccount(), learning=useLearningStore(account), {state:learningState,dispatch}=learning,completed=learningState.completed,profile=accountLearningProfile(account.user, learningState);
   const profileUnavailable = ["unavailable", "account-unavailable"].includes(learning.status);
   const [screen,setScreen]=useState("browse"),[resumeMode,setResumeMode]=useState("learn");
-  const [experiment, setExperiment] = useState(null), [workspaceRevision, setWorkspaceRevision] = useState(0);
+  const [experiment, setExperiment] = useState(null), [workspaceRevision, setWorkspaceRevision] = useState(0), [designTarget, setDesignTarget] = useState(null), [designStartLevel, setDesignStartLevel] = useState(null);
   const [backgroundPaused, setBackgroundPaused] = useState(false);
   const [session, setSession] = useState("home");
   const practiceDay = usePracticeDay();
   const coding = practiceDay ? codingSummary(learningState, practiceDay) : null;
-  useCodingTime({ enabled: learning.status !== "loading" && !accountOpen && (screen === "daily" || !!language && !!path), identity: learning.identity, dispatch });
-  const activeSession = screen==="daily"?session:screen==="notebook"?"test":!language ? "home" : !path ? "hub" : session;
+  useCodingTime({ enabled: learning.status !== "loading" && !accountOpen && (screen === "daily" || screen === "design" || !!language && !!path), identity: learning.identity, dispatch });
+  const activeSession = screen === "design" ? "practice" : screen==="daily"?session:screen==="notebook"?"test":!language ? "home" : !path ? "hub" : session;
+  useScrollToTop(`${screen}:${language}:${path}:${activeSession}:${workspaceRevision}`);
   const headingRef = useRef(null), initializedRef = useRef(false);
   useEffect(() => { if (initializedRef.current) headingRef.current?.focus(); else initializedRef.current = true; }, [language, path]);
   function saveProfile(next) { if (account.user && learning.status !== "loading" && !profileUnavailable) dispatch({type:"profile",profile:next}); }
   function openAccount(mode = "signin") { setAccountInitialMode(account.user ? mode === "edit" ? "edit" : "profile" : "signin"); setAccountOpen(true); }
-  function editProfile() { openAccount("edit"); }
   function closeAccount() { setAccountOpen(false); }
   function chooseLanguage(next) { setScreen("browse");setLanguage(next); setPath(null); setInitialEntry(null); setExperiment(null); setResumeMode("teach"); setSession("hub"); }
   function choosePath(next, entry = null) { setScreen("browse");setResumeMode(webSessions[language] && next === "problems" ? "practice" : "teach");setPath(next); setInitialEntry(entry); setExperiment(null); setSession(next === "methods" && lessons[language] ? "learn" : "teach"); }
@@ -60,9 +62,10 @@ export default function PracticeApp() {
   const onQuizComplete=useCallback(quiz=>dispatch({type:"quiz",...quiz}),[dispatch]);
   const onDraft=useCallback(draft=>dispatch({type:"draft",...draft}),[dispatch]);
   const toggleBookmark=useCallback(item=>dispatch({type:"bookmark",...item}),[dispatch]);
-  function openTopic(item){setScreen("browse");setLanguage(item.language);setPath(item.path);setInitialEntry(item.entryId);setResumeMode(item.mode||"learn");setSession(item.mode||"learn");if(lessons[item.language]&&item.path==="methods"){const topic=lessons[item.language].find(entry=>entry.id===item.entryId);if(topic)setExperiment({method:topic.id,config:learningState.drafts[learningKey(item)]?.config||item.config||defaultConfig(topic)});}else setExperiment(null);setWorkspaceRevision(value=>value+1);}
+  function openTopic(item){if(item.path==="design"){setLanguage(null);setPath(null);setScreen("design");setSession("practice");setDesignTarget(item.entryId);return;}setScreen("browse");setLanguage(item.language);setPath(item.path);setInitialEntry(item.entryId);setResumeMode(item.mode||"learn");setSession(item.mode||"learn");if(lessons[item.language]&&item.path==="methods"){const topic=lessons[item.language].find(entry=>entry.id===item.entryId);if(topic)setExperiment({method:topic.id,config:learningState.drafts[learningKey(item)]?.config||item.config||defaultConfig(topic)});}else setExperiment(null);setWorkspaceRevision(value=>value+1);}
   function openDaily(next){if(learning.status==="loading")return;setLanguage(next);setPath(null);setScreen("daily");setSession("teach");}
   function openNotebook(){setScreen("notebook");setPath(null);setSession("test");}
+  function openDesign(level = null){setLanguage(null);setPath(null);setScreen("design");setSession("practice");setDesignTarget(null);setDesignStartLevel(level);}
 
   useEffect(() => {
     const registry = document.modelContext; if (!registry?.registerTool) return;
@@ -77,7 +80,7 @@ export default function PracticeApp() {
   }, []);
 
   return <div className="app-scene" data-scene={screen!=="browse"?"workspace":!language?"home":!path?"paths":"workspace"} data-language={language || "all"} data-session={activeSession} data-path={path || "none"} data-background-paused={backgroundPaused}>
-    <CodeAtmosphere language={language} session={activeSession} path={path}/>
+    <CodeAtmosphere language={screen === "design" ? "html" : language} session={activeSession} path={path}/>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="site-header practice-header">
       <button className="brand" aria-label={`${siteBrand.name} home`} onClick={goHome}><span className="brand-mark"><Icon name="code" size={20}/></span><span className="brand-wordmark">Code<span className="brand-bold">Forge</span> <span className="brand-lab">Lab</span><span className="brand-period">.</span></span></button>
@@ -87,10 +90,11 @@ export default function PracticeApp() {
     <AccountDialog open={accountOpen} account={account} profile={profile} coding={coding} motionPaused={backgroundPaused} initialMode={accountInitialMode} close={closeAccount} saveProfile={saveProfile} profileLoading={learning.status==="loading"} profileUnavailable={profileUnavailable} profileSaving={learning.status==="saving"} retryProfile={learning.retry}/>
     <MilestoneCelebration summary={coding} identity={learning.identity} loading={learning.status==="loading"} motionPaused={backgroundPaused}/>
     <SaveStatus status={learning.status} retry={learning.retry} configured={account.configured}/>
-    {screen==="daily"?<DailyPractice key={language} language={language} state={learningState} dispatch={dispatch} profile={profile} onDraft={onDraft} onSessionChange={setSession} exit={webSessions[language] ? () => choosePath(null) : goHome}/>:screen==="notebook"?<MistakeNotebook state={learningState} onAnswer={onAnswer} openTopic={openTopic} exit={goHome}/>:!language ? <main className="practice-home home-overview" id="main-content">
+    {screen === "design" ? <WebDesignSession key={learning.identity} state={learningState} dispatch={dispatch} identity={learning.identity} loading={learning.status === "loading"} exit={goHome} bookmarks={learningState.bookmarks} toggleBookmark={toggleBookmark} initialChallenge={designTarget} initialLevel={designStartLevel}/> : screen==="daily"?<DailyPractice key={language} language={language} state={learningState} dispatch={dispatch} profile={profile} onDraft={onDraft} onSessionChange={setSession} exit={webSessions[language] ? () => choosePath(null) : goHome}/>:screen==="notebook"?<MistakeNotebook state={learningState} onAnswer={onAnswer} openTopic={openTopic} exit={goHome}/>:!language ? <main className="practice-home home-overview" id="main-content">
       <div className="practice-intro"><h1 ref={headingRef} tabIndex={-1}>Your next coding session<span className="brand-period">.</span></h1><p>Pick a language. Keep your momentum.</p></div>
       <CodingJourney summary={coding} today={practiceDay} startPractice={()=>openDaily(learningState.lastVisited?.language||"javascript")} loading={learning.status==="loading"} signedIn={!!account.user} saveStatus={learning.status} motionPaused={backgroundPaused}/>
       <section className="home-sessions" aria-labelledby="home-sessions-title"><div className="home-section-heading"><h2 id="home-sessions-title">Learning sessions</h2><span>6 languages · 4 paths each</span></div><div className="practice-language-grid">{Object.entries(languages).map(([id,info])=><button key={id} className={`language-card ${id}-card`} data-language={id} onClick={()=>chooseLanguage(id)}><LanguageMark language={id}/><div className="home-session-label"><h3>{info.name}</h3><p>{sessionLabels[id]}</p></div><Icon name="chevron" size={17}/></button>)}</div></section>
+      <DesignLevelCards open={openDesign}/>
       <RelatedLearning compact/>
       <LearningDashboard compact loading={learning.status==="loading"} state={learningState} openDaily={openDaily} openNotebook={openNotebook} openTopic={openTopic}/>
       <JourneyDetails summary={coding} today={practiceDay} loading={learning.status==="loading"}/>
@@ -98,8 +102,9 @@ export default function PracticeApp() {
       <div className="breadcrumb"><button onClick={goHome}>Languages</button><span>/</span><span>{languages[language].name}</span></div>
       <div className="practice-intro"><div className="path-language-heading"><LanguageMark language={language}/><div><span className="eyebrow">CHOOSE YOUR PRACTICE PATH</span><h1 ref={headingRef} tabIndex={-1}>{languages[language].name}: where do you want to start?</h1></div></div><p>Pick a focus. Each path gives you a topic, an explanation, and a way to practice.</p></div>
       <LearningDashboard compact state={learningState} language={language} openDaily={openDaily} openNotebook={openNotebook} openTopic={openTopic}/>
+      {webSessions[language] && <DesignSessionLink compact open={openDesign}/>}
       <div className="practice-path-grid">{(webSessions[language] ? webPracticePaths(language) : practicePaths).map(item=><button key={item.id} className={`practice-path-card ${item.id}`} data-path={item.id} onClick={()=>choosePath(item.id)}><div className="path-card-top"><span className="path-number">{item.number}</span><span className="path-icon"><Icon name={item.icon} size={24}/></span></div><h2>{item.title}</h2><p>{item.description}</p><div className="path-card-bottom"><span>{pathCount(language,item.id)} {item.id==="render"?"visual lessons":item.id==="methods"?"methods & functions":item.id==="basics"?"topics":item.id==="interviews"?"questions":"problems"}</span><span>{completed[`${language}:${item.id}`]?.length ? `${completed[`${language}:${item.id}`].length} ${item.id === "methods" && lessons[language] ? "explored" : "practiced"}` : item.action}</span></div></button>)}</div>
-    </main> : webSessions[language] ? <WebWorkspace key={`${language}-${path}-${workspaceRevision}`} language={language} path={path} changePath={choosePath} initialEntry={initialEntry} initialMode={resumeMode} profile={profile} editProfile={editProfile} completed={completed[`${language}:${path}`]||[]} markCompleted={markCompleted} onVisit={onVisit} onDraft={onDraft} onSessionChange={setSession} drafts={learningState.drafts} bookmarks={learningState.bookmarks} toggleBookmark={toggleBookmark} exit={goHome}/> : path === "methods" && lessons[language] ? <MethodsWorkspace key={`${language}-${workspaceRevision}`} initialLanguage={language} initialExperiment={experiment} initialExplored={completed[`${language}:methods`]||[]} onExplored={markCompleted} profile={profile} editProfile={editProfile} onExit={()=>choosePath(null)} onSessionChange={setSession} onVisit={onVisit} onAnswer={onAnswer} onQuizComplete={onQuizComplete} initialMode={resumeMode} bookmarks={learningState.bookmarks} toggleBookmark={toggleBookmark}/> : <PracticeWorkspace key={`${language}-${path}-${initialEntry || ""}-${workspaceRevision}`} language={language} path={path} initialEntry={initialEntry} profile={profile} editProfile={editProfile} completed={completed[`${language}:${path}`]||[]} markCompleted={markCompleted} changePath={choosePath} onSessionChange={setSession} onVisit={onVisit} onAnswer={onAnswer} onDraft={onDraft} initialMode={resumeMode} drafts={learningState.drafts} bookmarks={learningState.bookmarks} toggleBookmark={toggleBookmark}/>}
+    </main> : webSessions[language] ? <WebWorkspace key={`${language}-${path}-${workspaceRevision}`} language={language} path={path} changePath={choosePath} openDesign={openDesign} initialEntry={initialEntry} initialMode={resumeMode} profile={profile} completed={completed[`${language}:${path}`]||[]} markCompleted={markCompleted} onVisit={onVisit} onDraft={onDraft} onSessionChange={setSession} drafts={learningState.drafts} bookmarks={learningState.bookmarks} toggleBookmark={toggleBookmark} exit={goHome}/> : path === "methods" && lessons[language] ? <MethodsWorkspace key={`${language}-${workspaceRevision}`} initialLanguage={language} initialExperiment={experiment} initialExplored={completed[`${language}:methods`]||[]} onExplored={markCompleted} profile={profile} onExit={()=>choosePath(null)} onSessionChange={setSession} onVisit={onVisit} onAnswer={onAnswer} onQuizComplete={onQuizComplete} initialMode={resumeMode} bookmarks={learningState.bookmarks} toggleBookmark={toggleBookmark}/> : <PracticeWorkspace key={`${language}-${path}-${initialEntry || ""}-${workspaceRevision}`} language={language} path={path} initialEntry={initialEntry} profile={profile} completed={completed[`${language}:${path}`]||[]} markCompleted={markCompleted} changePath={choosePath} onSessionChange={setSession} onVisit={onVisit} onAnswer={onAnswer} onDraft={onDraft} initialMode={resumeMode} drafts={learningState.drafts} bookmarks={learningState.bookmarks} toggleBookmark={toggleBookmark}/>}
     <footer className="site-footer"><span>{siteBrand.name}<span className="brand-period">.</span></span><a className="creator-credit" href="https://manojkumar-dev.vercel.app/" target="_blank" rel="noopener noreferrer"><span>Created by</span> Manoj Kumar <Icon name="code" size={15}/></a><span>JavaScript · Python · Java · C · HTML · CSS</span></footer>
   </div>;
 }

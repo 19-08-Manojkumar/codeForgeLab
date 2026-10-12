@@ -1,17 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { validateProfile, learnerBackground, learnerGoalMessage } from "../lib/learner.mjs";
+import { validateProfile } from "../lib/learner.mjs";
 import ProfileFields, { emptyProfileDraft } from "./profile-fields";
-
-export function LearnerBanner({ profile, edit }) {
-  if (!profile) return null;
-  return <section className="learner-banner" aria-label="Your learning profile">
-    <span className="learner-avatar" aria-hidden="true">{Array.from(profile.name)[0]}</span>
-    <div className="learner-welcome"><strong>Welcome, {profile.name}<span className="brand-period">.</span></strong><span>{learnerBackground(profile)}</span><p>{learnerGoalMessage(profile)}</p></div>
-    <button className="text-button" onClick={edit}>Edit details</button>
-  </section>;
-}
 
 export default function LearnerDialog({ open, profile, save, cancel, clear }) {
   const dialogRef = useRef(null);
@@ -65,7 +56,7 @@ export default function LearnerDialog({ open, profile, save, cancel, clear }) {
   return <dialog ref={dialogRef} className="learner-dialog" aria-labelledby="profile-title" aria-describedby="profile-intro" onKeyDown={keepFocusInDialog} onCancel={event => { event.preventDefault(); cancel(); }}>
     <div className="profile-topline"><span className="profile-code-mark" aria-hidden="true">{"{ "}<bdi>{displayName}</bdi>{" }"}</span><span className="eyebrow">YOUR LEARNING, YOUR PACE</span><button className="profile-close" onClick={cancel} aria-label={profile ? "Cancel profile changes" : "Skip welcome form"}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <h2 id="profile-title">{profile ? "Your learning profile" : "Make CodeForge Lab yours"}<span className="brand-period">.</span></h2>
-    <p id="profile-intro">Tell us a little about yourself for a personal welcome and encouragement as you learn.</p>
+    <p id="profile-intro">Tell us a little about yourself for personalized encouragement when you complete a practice challenge.</p>
     <form onSubmit={submit} noValidate>
       <ProfileFields draft={draft} update={update} errors={errors} nameRef={nameRef}/>
       <p className="profile-storage-note"><span aria-hidden="true">⌁</span> Saved with your learning progress when saving is available.</p>
