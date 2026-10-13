@@ -9,6 +9,7 @@ import { buildDesignPreview, gradeDesignChecks } from "../lib/web-design-preview
 import { formatDesignCode } from "../lib/web-design-format.mjs";
 import useScrollToTop from "./use-scroll-to-top";
 import { TopicBookmark } from "./learning-dashboard";
+import CardDecoration from "./card-decoration";
 
 const emptyCode = () => ({ html: "", css: "", js: "" });
 const fileLabels = { html: "HTML", css: "CSS", js: "JavaScript" };
@@ -25,7 +26,7 @@ export function DesignSessionLink({ open, compact = false }) {
 export function DesignLevelCards({ open }) {
   return <section className="home-design-levels" aria-labelledby="home-design-title">
     <div className="home-design-levels-heading"><div><span className="eyebrow">BUILD REAL INTERFACES</span><h2 id="home-design-title">Web Design</h2><p>Choose a level and create your own version of real interfaces.</p></div><DesignMark small/></div>
-    <div className="home-design-level-grid">{designLevels.map(item => <button key={item.id} className={`home-design-level-card level-${item.level}`} onClick={() => open(item.level)}><span className="home-design-level-meta"><b>0{item.level}</b><small>{item.level < 3 ? "HTML + CSS" : "HTML + CSS + JS"}</small></span><strong>{item.title}</strong><span className="home-design-level-description">{item.description}</span><span className="home-design-level-action">Explore level <Icon name="chevron" size={14}/></span></button>)}</div>
+    <div className="home-design-level-grid">{designLevels.map(item => <button key={item.id} className={`home-design-level-card level-${item.level}`} onClick={() => open(item.level)}><CardDecoration variant={`level-${item.level}`}/><span className="home-design-level-meta"><b>0{item.level}</b><small>{item.level < 3 ? "HTML + CSS" : "HTML + CSS + JS"}</small></span><strong>{item.title}</strong><span className="home-design-level-description">{item.description}</span><span className="home-design-level-action">Explore level <Icon name="chevron" size={14}/></span></button>)}</div>
   </section>;
 }
 
@@ -185,8 +186,8 @@ function DesignChallenge({ challenge, run, state, dispatch, identity, select, ba
   </main>;
 }
 
-export default function WebDesignSession({ state, dispatch, identity, loading, exit, bookmarks = [], toggleBookmark, initialChallenge = null, initialLevel = null }) {
-  const [level, setLevel] = useState(null);
+export default function WebDesignSession({ state, dispatch, identity, loading, exit, bookmarks = [], toggleBookmark, initialChallenge = null, initialLevel = null, onLocationChange }) {
+  const [level, setLevel] = useState(initialLevel || getDesignChallenge(initialChallenge)?.level || null);
   const openedChallenge = useRef(null);
   const openedLevel = useRef(null);
   const run = level ? state.design?.runs?.[level] : null;
@@ -221,9 +222,12 @@ export default function WebDesignSession({ state, dispatch, identity, loading, e
     if (loading || !initialLevel || openedLevel.current === initialLevel) return;
     openedLevel.current = initialLevel;
     const current = state.design?.runs?.[initialLevel];
-    if (current && current.index < current.order.length) setLevel(initialLevel);
+    if (current) setLevel(initialLevel);
     else start(initialLevel);
   }, [initialLevel, loading, state.design]);
+  useEffect(() => {
+    if (!loading && (!level || run)) onLocationChange?.({ level, entryId: challengeId || null });
+  }, [loading, level, run, challengeId, onLocationChange]);
   function select(index) { dispatch({ type: "design-select", level, index }, identity); }
   if (challenge && run) return <DesignChallenge key={`${identity}:${run.id}:${run.index}`} challenge={challenge} run={run} state={state} dispatch={dispatch} identity={identity} select={select} back={() => setLevel(null)} fresh={() => start(level)} bookmarks={bookmarks} toggleBookmark={toggleBookmark}/>;
   if (run && run.index >= run.order.length) {
@@ -239,6 +243,7 @@ export default function WebDesignSession({ state, dispatch, identity, loading, e
     <section className="design-level-grid" aria-label="Choose Web Design level">{designLevels.map(item => {
       const progress = getDesignProgress(state, item.level), current = progress.run;
       return <article key={item.id} className={`design-level-card level-${item.level}`}>
+        <CardDecoration variant={`level-${item.level}`}/>
         <div className="design-level-card-top"><span className="design-level-number">0{item.level}</span><span className="design-language-tag">{item.level < 3 ? "HTML + CSS" : item.level === 3 ? "HTML + CSS · Intro JS" : "HTML + CSS + JS"}</span></div>
         <h2>{item.title}</h2><p>{item.description}</p>
         <div className="design-level-progress"><span>15 challenges</span><span>{progress.completed} passed</span><div role="progressbar" aria-label={`Level ${item.level} completion`} aria-valuemin={0} aria-valuemax={15} aria-valuenow={progress.completed}><i style={{ width: `${progress.percent}%` }}/></div></div>

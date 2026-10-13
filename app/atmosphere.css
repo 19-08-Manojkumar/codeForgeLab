@@ -3,6 +3,8 @@
 .app-scene[data-language="python"] { --sky-one:#347ac5; --sky-two:#d2a120; --sky-three:#309caa; --sky-four:#6268d8; }
 .app-scene[data-language="java"] { --sky-one:#d16b40; --sky-two:#387bbf; --sky-three:#c44982; --sky-four:#a276d0; }
 .app-scene[data-language="c"] { --sky-one:#2499b4; --sky-two:#3772d1; --sky-three:#20a58c; --sky-four:#7665c7; }
+.app-scene[data-language="html"] { --sky-one:#e05b67; --sky-two:#ee935a; --sky-three:#d05f98; --sky-four:#efb96b; }
+.app-scene[data-language="css"] { --sky-one:#8456d5; --sky-two:#b77ac9; --sky-three:#697cdf; --sky-four:#d48aad; }
 .app-scene[data-session="hub"] { --meteor-motion:meteor-fan; --tail-angle:atan2(60vh,185vw); }
 .app-scene[data-session="teach"] { --meteor-motion:meteor-rising; --tail-angle:atan2(-200vh,170vw); --code-motion:code-rising; --meteor-opacity:.42; --code-opacity:.25; }
 .app-scene[data-session="learn"] { --meteor-motion:meteor-stream; --tail-angle:0deg; --tail-scale:1.3; --sky-two:#299eae; --code-motion:code-stream; --meteor-opacity:.48; --code-opacity:.25; }

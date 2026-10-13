@@ -9,6 +9,8 @@ import "./auth.css";
 import "./coding-journey.css";
 import "./home-overview.css";
 import "./web-design.css";
+import "./language-effects.css";
+import "./session-card-effects.css";
 import { siteBrand } from "../lib/site.mjs";
 
 export const metadata = {

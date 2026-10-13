@@ -18,7 +18,12 @@ export async function checkWebDesign({ states, accounts, signIn, signOut, saved,
     }
     throw new Error("Web Design account update did not finish saving.");
   };
-  const open = async () => { await evaluate("document.querySelector('.home-design-session').click()"); await wait("document.querySelectorAll('.design-level-card').length===4"); };
+  const open = async () => {
+    await evaluate("document.querySelector('.language-switch .language-mark.html').closest('button').click()");
+    await wait("document.querySelector('.path-hub .home-design-session')");
+    await evaluate("document.querySelector('.home-design-session').click()");
+    await wait("document.querySelectorAll('.design-level-card').length===4");
+  };
   const fillSolution = async challenge => {
     for (const file of challenge.level >= 3 ? ["html", "css", "js"] : ["html", "css"]) {
       await click(({ html:"HTML", css:"CSS", js:"JavaScript" })[file], ".design-editor-panel [role=tab]");
@@ -57,7 +62,8 @@ export async function checkWebDesign({ states, accounts, signIn, signOut, saved,
   await fillSolution(second); await click("Check my design"); await wait("document.querySelector('.design-feedback h2')?.textContent==='Full match!'");
   await backendWait(design => design.results[secondId]?.assisted);
   assert.equal(states.get(owner.id).state.design.results[secondId].passed, false, "Revealed solutions do not earn independent completion");
-  await call("Page.reload"); await saved(); await open(); await click("Continue · 2/15", ".design-level-card.level-1 button");
+  const timeOrigin = await evaluate("performance.timeOrigin");
+  await call("Page.reload"); await wait(`performance.timeOrigin!==${timeOrigin} && document.querySelector('.design-topbar')?.textContent.includes('Challenge 2 of 15')`); await saved();
   await wait("document.querySelector('.design-score-tag')?.textContent==='Assisted practice'");
   assert.equal(await evaluate("document.querySelector('.design-code-area textarea').value"), second.solution.html, "Account draft resumes after reload");
   await click("CSS", ".design-editor-panel [role=tab]");

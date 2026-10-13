@@ -10,6 +10,8 @@
     "start:legacy": "node scripts/serve-learning.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node scripts/supabase-smoke.mjs",
+    "test:refresh": "node scripts/supabase-smoke.mjs --refresh-only",
+    "test:effects": "node scripts/supabase-smoke.mjs --effects-only",
     "db:generate": "drizzle-kit generate",
     "db:migrate-legacy": "node scripts/migrate-learning.mjs"
   },

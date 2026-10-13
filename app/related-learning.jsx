@@ -1,3 +1,5 @@
+import CardDecoration from "./card-decoration";
+
 const learningSites = [
   {
     id: "databases",
@@ -24,10 +26,11 @@ function LearningMark({ database }) {
 }
 
 export default function RelatedLearning({ compact = false }) {
-  if(compact)return <section className="home-related" aria-labelledby="home-related-title"><div className="home-section-heading"><h2 id="home-related-title">Other areas to learn</h2><span>Separate learning projects</span></div><div className="home-related-sessions" aria-label="Other areas to learn">{learningSites.map(site=><a key={site.id} className={`home-related-link ${site.id}`} href={site.href} target="_blank" rel="noopener noreferrer"><span className="related-learning-mark"><LearningMark database={site.id==="databases"}/></span><div><strong>{site.id==="databases"?"SQL & NoSQL":"Data science & analytics"}</strong><span>{site.name}</span></div><span className="home-external-arrow" aria-hidden="true">↗</span><span className="sr-only">Opens in a new tab.</span></a>)}</div></section>;
+  if(compact)return <section className="home-related" aria-labelledby="home-related-title"><div className="home-section-heading"><h2 id="home-related-title">Other areas to learn</h2><span>Separate learning projects</span></div><div className="home-related-sessions" aria-label="Other areas to learn">{learningSites.map(site=><a key={site.id} className={`home-related-link ${site.id}`} href={site.href} target="_blank" rel="noopener noreferrer"><CardDecoration variant={site.id}/><span className="related-learning-mark"><LearningMark database={site.id==="databases"}/></span><div><strong>{site.id==="databases"?"SQL & NoSQL":"Data science & analytics"}</strong><span>{site.name}</span></div><span className="home-external-arrow" aria-hidden="true">↗</span><span className="sr-only">Opens in a new tab.</span></a>)}</div></section>;
   return <section className="related-learning" aria-labelledby="related-learning-heading">
     <div className="related-learning-heading"><span className="eyebrow">KEEP LEARNING</span><h2 id="related-learning-heading">Explore other areas</h2><p>Continue your learning on our database and data websites.</p></div>
     <div className="related-learning-grid">{learningSites.map(site => <a key={site.id} className={`related-learning-card ${site.id}`} href={site.href} target="_blank" rel="noopener noreferrer">
+      <CardDecoration variant={site.id}/>
       <div className="related-card-top"><span className="related-learning-mark"><LearningMark database={site.id === "databases"}/></span><span className="related-site-name">{site.name}</span><svg className="related-external-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3h7v7M21 3l-9 9M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/></svg></div>
       <h3>{site.title}</h3><p>{site.description}</p><div className="related-topic-list">{site.topics.map(topic => <span key={topic}>{topic}</span>)}</div>
       <div className="related-card-bottom"><span>{site.action}</span><span className="related-link-arrow" aria-hidden="true">↗</span></div><span className="sr-only">Opens {site.name} in a new tab.</span>

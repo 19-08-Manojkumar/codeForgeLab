@@ -9,6 +9,8 @@ import assert from "node:assert/strict";
 import { emptyLearningState, localDay, applyLearningEvent } from "../lib/learning-state.mjs";
 import { shiftActivityDay, codingSummary } from "../lib/coding-activity.mjs";
 import { checkWebDesign } from "./web-design-browser-checks.mjs";
+import { checkPageRefresh } from "./page-refresh-browser-checks.mjs";
+import { checkLanguageEffects } from "./language-effects-browser-checks.mjs";
 
 const accounts = [
   { id: "11111111-1111-4111-8111-111111111111", email: "first@example.test" },
@@ -130,6 +132,15 @@ try {
   const signOut = async () => { await click("Profile", ".account-trigger"); await click("Logout", ".account-dialog button"); await guestReady(); assert.equal(await evaluate("document.body.style.overflow!== 'hidden' && document.activeElement===document.querySelector('.account-trigger')"), true, "Logout restores the guest page and focus"); };
   await call("Runtime.enable"); await call("Page.enable"); await call("Page.bringToFront"); await call("Log.enable"); await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
   await call("Page.navigate", { url: base }); await guestReady();
+  if (process.argv.includes("--effects-only")) {
+    await checkLanguageEffects({evaluate,wait,click,call,screenshot});
+    assert.deepEqual(errors, []);
+  } else if (process.argv.includes("--refresh-only")) {
+    await checkPageRefresh({evaluate,wait,click,call,field});
+    await signIn(accounts[0]); await saved();
+    await checkPageRefresh({evaluate,wait,click,call,field});
+    assert.deepEqual(errors, []);
+  } else {
   await wait("document.querySelector('.journey-streak-number strong')?.textContent==='0'");
   assert.equal(await evaluate("document.querySelectorAll('.journey-trophy.earned').length"), 0, "Opening the home page must not earn a coding day or trophy");
   for (const width of [1440, 390, 360]) {
@@ -264,6 +275,7 @@ try {
   await click("Profile", ".account-trigger"); await wait("document.querySelector('.account-name')?.textContent==='Mira Updated'");
   await evaluate("document.querySelector('[aria-label=\"Close profile\"]').click()");
   assert.equal(states.get(createdAccount.id).state.bookmarks.length, 1);
+  await evaluate("document.querySelector('.brand').click()"); await wait("document.querySelector('.home-overview')");
   const homeHeight=await evaluate("document.querySelector('.home-overview').scrollHeight");
   await evaluate("document.querySelector('.home-bookmarks > summary').click()");
   assert.equal(await evaluate(`document.querySelector('.home-overview').scrollHeight===${homeHeight}`), true, "Opening bookmarked topics does not change the home layout height");
@@ -333,6 +345,7 @@ try {
   await screenshot("compact-home-live-flame.png");
   await signOut();
   await checkWebDesign({states,accounts,signIn,signOut,saved,evaluate,wait,click,field,call,screenshot});
+  await checkPageRefresh({evaluate,wait,click,call,field});
   await call("Emulation.setDeviceMetricsOverride", { width:360,height:900,deviceScaleFactor:1,mobile:true });
   await call("Page.navigate", { url: base + "/auth/confirm?token_hash=expired&type=recovery" }); await wait("location.pathname.includes('/auth/error')");
   assert.equal(await evaluate("document.documentElement.scrollWidth<=innerWidth && Boolean(document.querySelector('.auth-card h1'))"), true); await screenshot("auth-expired-link-mobile.png");
@@ -343,9 +356,10 @@ try {
   await field("#confirm-password", "changed-password-123"); await click("Update password"); await wait("document.querySelector('[role=status]')?.textContent.includes('updated')");
   await screenshot("supabase-password-reset-mobile.png");
   assert.deepEqual(errors, []);
+  }
 } catch (error) { try { await screenshot?.("supabase-browser-failure.png"); } catch {} console.error(JSON.stringify({backendCalls:backendCalls.slice(-12),errors,browserLogs,stateOwners:[...states].map(([owner,value])=>({owner,revision:value.revision,eventCount:value.events.size}))})); throw error; }
 finally {
   socket?.close(); backend.closeAllConnections(); backend.close();
   await stopProcess(browser); await stopProcess(next);
 }
-console.log(JSON.stringify({ passed: true, checks: ["real Next.js API routes and Supabase session cookies", "single Login/Profile control with no automatic guest dialog", "signup from Login, profile validation and matching passwords", "sign-up confirmation, invalid sign-in, password recovery forms", "profile completion, edit cancellation, validation, saving and clearing in one dialog", "device draft import and reload", "lost response retry", "account isolation, logout and restored focus", "signup profile, updated name, draft and bookmark restored with fresh browser storage", "Web Design: four levels, 15 challenges each, blank editors, rendered grading and JavaScript interactions", "Web Design: account draft resume, assisted answer tracking, varied target/order and account isolation", "expired links and token-hash password reset", "360/390/1100/1440px signup, sign-in and profile layouts", "no browser exceptions"], backend: "local simulated Supabase service; no live credentials or emails used" }));
+console.log(JSON.stringify({ passed: true, checks: process.argv.includes("--effects-only") ? ["six distinct language palettes, illustrations and animations", "Web Design, all language practice paths and related-learning cards have distinct animated backgrounds", "language portals navigate immediately and never capture input", "language-specific code scenes in the practice hubs", "360/390/1440px card layouts", "Pause motion, reduced motion and rapid navigation", "no browser exceptions"] : process.argv.includes("--refresh-only") ? ["refresh preserves all six language hubs, selected topics and learning tabs", "daily practice steps and browser-learning tabs restore on refresh", "Web Design challenge, draft and level list restore on refresh", "Home and browser Back/Forward navigation", "no browser exceptions"] : ["real Next.js API routes and Supabase session cookies", "single Login/Profile control with no automatic guest dialog", "signup from Login, profile validation and matching passwords", "sign-up confirmation, invalid sign-in, password recovery forms", "profile completion, edit cancellation, validation, saving and clearing in one dialog", "device draft import and reload", "lost response retry", "account isolation, logout and restored focus", "signup profile, updated name, draft and bookmark restored with fresh browser storage", "Web Design: four levels, 15 challenges each, blank editors, rendered grading and JavaScript interactions", "Web Design: account draft resume, assisted answer tracking, varied target/order and account isolation", "expired links and token-hash password reset", "360/390/1100/1440px signup, sign-in and profile layouts", "no browser exceptions"], backend: "local simulated Supabase service; no live credentials or emails used" }));

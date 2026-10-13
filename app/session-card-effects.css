@@ -1,0 +1,117 @@
+/* A quiet layer of color and motion for the session, design and discovery cards. */
+.app-scene :is(.practice-path-card, .home-design-level-card, .design-level-card, .home-related-link, .related-learning-card) {
+  --surface-accent:#5969d8;
+  --surface-deep:#354991;
+  --surface-wash:#eaf0ff;
+  --surface-rgb:89,105,216;
+  position:relative; isolation:isolate; overflow:hidden;
+  border-color:rgba(var(--surface-rgb),.23);
+  background:linear-gradient(125deg,#ffffff 2%,var(--surface-wash) 74%,color-mix(in srgb,var(--surface-accent) 16%,white));
+  box-shadow:0 4px 16px rgba(var(--surface-rgb),.06);
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.app-scene :is(.practice-path-card, .home-design-level-card, .design-level-card, .home-related-link, .related-learning-card)::after {
+  content:""; position:absolute; z-index:-1; width:150px; height:150px; right:-70px; bottom:-80px;
+  border:1px solid rgba(var(--surface-rgb),.12); border-radius:50%;
+  box-shadow:0 0 0 19px rgba(var(--surface-rgb),.045),0 0 0 40px rgba(var(--surface-rgb),.025);
+  pointer-events:none; animation:session-halo-drift 10s ease-in-out infinite;
+}
+.app-scene :is(.practice-path-card, .home-design-level-card, .home-related-link, .related-learning-card):is(:hover, :focus-visible), .app-scene .design-level-card:is(:hover, :focus-within) {
+  transform:translateY(-3px); border-color:var(--surface-accent);
+  box-shadow:0 10px 25px rgba(var(--surface-rgb),.16);
+}
+.app-scene :is(.practice-path-card, .home-design-level-card, .home-related-link, .related-learning-card):focus-visible {
+  outline:3px solid var(--surface-accent); outline-offset:3px;
+}
+.card-decoration { position:absolute; pointer-events:none; user-select:none; color:var(--surface-accent); right:65px; top:10px; width:110px; height:77px; z-index:-1; opacity:.3; }
+.card-decoration svg { display:block; width:100%; height:100%; overflow:visible; }
+.decoration-fill { fill:rgba(var(--surface-rgb),.12); }
+.decoration-float { animation:session-art-float 6s ease-in-out infinite; }
+.decoration-slide { animation:session-art-slide 5s ease-in-out infinite; }
+.decoration-pulse { animation:session-art-pulse 4s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+.decoration-orbit { animation:session-code-orbit 18s linear infinite; transform-origin:50px 35px; }
+.decoration-dot { animation:session-code-dot 6s ease-in-out infinite; }
+.decoration-layout { animation:session-layout-shift 6s ease-in-out infinite; transform-origin:50px 35px; }
+.decoration-click { animation:session-click-ripple 5s ease-out infinite; transform-box:fill-box; transform-origin:center; }
+.decoration-data { animation:session-data-travel 5s ease-in-out infinite; }
+.decoration-bars rect { animation:session-chart-rise 6s ease-in-out infinite; transform-box:fill-box; transform-origin:center bottom; }
+.decoration-bars rect:nth-child(2) { animation-delay:-2s; }
+.decoration-bars rect:nth-child(3) { animation-delay:-4s; }
+
+/* Practice paths: indigo code, green foundations, amber conversation, violet challenges. */
+.app-scene .practice-path-card { --card-accent:var(--surface-accent); }
+.app-scene .practice-path-card.basics { --surface-accent:#258f76; --surface-deep:#236454; --surface-wash:#e4f7ed; --surface-rgb:37,143,118; }
+.app-scene .practice-path-card.interviews { --surface-accent:#bd8730; --surface-deep:#805a22; --surface-wash:#fff3dc; --surface-rgb:189,135,48; }
+.app-scene .practice-path-card.problems { --surface-accent:#885aca; --surface-deep:#624190; --surface-wash:#f1e9fc; --surface-rgb:136,90,202; }
+.app-scene .practice-path-card.render { --surface-accent:#db6574; --surface-deep:#9a4354; --surface-wash:#ffecf0; --surface-rgb:219,101,116; }
+.practice-path-card .path-icon { color:var(--surface-accent); background:#ffffffad; border:1px solid rgba(var(--surface-rgb),.16); box-shadow:0 3px 8px rgba(var(--surface-rgb),.06); }
+.practice-path-card .path-number { color:var(--surface-accent); opacity:.7; }
+.practice-path-card h2 { color:var(--surface-deep); }
+.practice-path-card .path-card-bottom { border-color:rgba(var(--surface-rgb),.16); }
+.practice-path-card .path-card-bottom>span:last-child { color:var(--surface-deep); }
+.practice-path-card.methods .path-icon svg, .practice-path-card.render .path-icon svg { animation:session-icon-tilt 6s ease-in-out infinite; }
+.practice-path-card.basics .path-icon svg { animation:session-art-float 6s ease-in-out infinite; }
+.practice-path-card.interviews .path-icon svg { animation:session-art-pulse 5s ease-in-out infinite; }
+.practice-path-card.problems .path-icon svg { animation:session-art-slide 5s ease-in-out infinite; }
+
+/* Web Design: blueprint, layout, interactions and complete interfaces. */
+.app-scene .home-design-levels { background:linear-gradient(125deg,#f6f2ff,#f0f6ff 56%,#fff6ed); border-color:#ded9f1; }
+.app-scene :is(.home-design-level-card, .design-level-card).level-1 { --surface-accent:#835bd0; --surface-deep:#604294; --surface-wash:#f0e9ff; --surface-rgb:131,91,208; }
+.app-scene :is(.home-design-level-card, .design-level-card).level-2 { --surface-accent:#328db4; --surface-deep:#266881; --surface-wash:#e5f5fb; --surface-rgb:50,141,180; }
+.app-scene :is(.home-design-level-card, .design-level-card).level-3 { --surface-accent:#cf8639; --surface-deep:#90612d; --surface-wash:#fff0dc; --surface-rgb:207,134,57; }
+.app-scene :is(.home-design-level-card, .design-level-card).level-4 { --surface-accent:#299b84; --surface-deep:#226c60; --surface-wash:#dff7ee; --surface-rgb:41,155,132; }
+.app-scene .home-design-level-card { --home-level:var(--surface-deep); --home-level-light:var(--surface-wash); }
+.home-design-level-card .card-decoration { width:77px; height:54px; top:auto; right:9px; bottom:22px; opacity:.23; }
+.home-design-level-card>strong { color:var(--surface-deep); }
+.home-design-level-card .home-design-level-description { color:var(--surface-deep); opacity:.77; }
+.home-design-level-card .home-design-level-meta b { background:#ffffffa8; border:1px solid rgba(var(--surface-rgb),.16); }
+.home-design-level-card .home-design-level-action { border-top:1px solid rgba(var(--surface-rgb),.12); margin-top:auto; }
+.design-level-card .card-decoration { width:125px; height:88px; top:60px; right:8px; opacity:.17; }
+.design-level-card h2 { color:var(--surface-deep); }
+.design-level-card .design-level-number { color:var(--surface-accent); background:#ffffffb8; border:1px solid rgba(var(--surface-rgb),.2); }
+.design-level-card .design-language-tag { color:var(--surface-deep); border-color:rgba(var(--surface-rgb),.17); background:#ffffff8a; }
+.design-level-card .design-level-actions .primary-button { color:white; background:var(--surface-deep); box-shadow:0 4px 10px rgba(var(--surface-rgb),.16); }
+.design-level-card .design-level-actions .primary-button:hover { background:color-mix(in srgb,var(--surface-deep) 85%,black); }
+.design-level-card .design-level-progress [role="progressbar"] { background:rgba(var(--surface-rgb),.1); }
+.design-level-card .design-level-progress [role="progressbar"] i { background:var(--surface-accent); }
+.app-scene .home-design-session { background:linear-gradient(115deg,#f0e9ff,#e9f2ff 60%,#fdf4eb); border-color:#dad1f1; }
+.home-design-session .design-mark svg { animation:session-icon-tilt 7s ease-in-out infinite; }
+
+/* Related learning: streaming database records and a gently shifting chart. */
+.app-scene :is(.home-related-link, .related-learning-card).databases { --surface-accent:#138b79; --surface-deep:#206252; --surface-wash:#dff6eb; --surface-rgb:19,139,121; }
+.app-scene :is(.home-related-link, .related-learning-card).data-science { --surface-accent:#7d60cb; --surface-deep:#584494; --surface-wash:#eee8ff; --surface-rgb:125,96,203; }
+.app-scene :is(.home-related-link, .related-learning-card) { --related-color:var(--surface-accent); --related-light:var(--surface-wash); }
+.home-related-link .related-learning-mark, .related-learning-card .related-learning-mark { background:#ffffffb8; border:1px solid rgba(var(--surface-rgb),.15); box-shadow:0 3px 8px rgba(var(--surface-rgb),.08); }
+.home-related-link strong { color:var(--surface-deep); }
+.home-related-link .card-decoration { top:4px; right:46px; width:98px; height:69px; opacity:.2; }
+.related-learning-card .card-decoration { right:15px; top:58px; width:145px; height:101px; opacity:.16; }
+.home-related-link.databases .related-learning-mark svg { animation:session-art-float 6s ease-in-out infinite; }
+.home-related-link.data-science .related-learning-mark svg { animation:session-icon-tilt 6s ease-in-out infinite; }
+.home-related-link .home-external-arrow { color:var(--surface-accent); border:1px solid rgba(var(--surface-rgb),.12); transition:translate .2s ease; }
+.home-related-link:hover .home-external-arrow { translate:2px -2px; }
+
+@keyframes session-halo-drift { 0%,100% { transform:translate(0,0); } 50% { transform:translate(-9px,-6px); } }
+@keyframes session-art-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-3px); } }
+@keyframes session-art-slide { 0%,100% { transform:translateX(0); opacity:.65; } 50% { transform:translateX(3px); opacity:1; } }
+@keyframes session-art-pulse { 0%,100% { opacity:.5; transform:scale(.95); } 50% { opacity:1; transform:scale(1.04); } }
+@keyframes session-code-orbit { to { transform:rotate(360deg); } }
+@keyframes session-code-dot { 0%,100% { transform:translateY(-6px); } 50% { transform:translateY(6px); } }
+@keyframes session-layout-shift { 0%,100% { transform:rotate(-2deg); } 50% { transform:rotate(2deg) translateY(-2px); } }
+@keyframes session-click-ripple { 0%,100% { opacity:.1; transform:scale(.8); } 45% { opacity:.7; transform:scale(1.15); } }
+@keyframes session-data-travel { 0%,100% { transform:translateY(0); opacity:.3; } 50% { transform:translateY(20px); opacity:1; } }
+@keyframes session-chart-rise { 0%,100% { transform:scaleY(.85); } 50% { transform:scaleY(1); } }
+@keyframes session-icon-tilt { 0%,100% { transform:rotate(-4deg); } 50% { transform:rotate(4deg) translateY(-1px); } }
+
+.app-scene[data-background-paused="true"] :is(.practice-path-card, .home-design-level-card, .design-level-card, .home-related-link, .related-learning-card, .home-design-session) *,
+.app-scene[data-background-paused="true"] :is(.practice-path-card, .home-design-level-card, .design-level-card, .home-related-link, .related-learning-card)::after { animation-play-state:paused!important; }
+.app-scene[data-background-paused="true"] .practice-path-card { animation:none; }
+@media (max-width:760px) {
+  .practice-path-card .card-decoration { width:77px; height:54px; right:41px; top:13px; opacity:.22; }
+  .design-level-card .card-decoration { width:92px; height:64px; right:4px; top:80px; opacity:.13; }
+  .home-related-link .card-decoration { width:63px; height:44px; right:24px; top:14px; opacity:.14; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .app-scene :is(.practice-path-card, .home-design-level-card, .design-level-card, .home-related-link, .related-learning-card) *,
+  .app-scene :is(.practice-path-card, .home-design-level-card, .design-level-card, .home-related-link, .related-learning-card)::after, .home-design-session .design-mark svg { animation:none!important; }
+  .app-scene :is(.practice-path-card, .home-design-level-card, .home-related-link, .related-learning-card):is(:hover,:focus-visible), .app-scene .design-level-card:is(:hover,:focus-within) { transform:none; }
+}
